@@ -13,11 +13,12 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:scrollbarSize="1dp">
 
         <RelativeLayout
             android:id="@+id/rv_main"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent">
 
             <LinearLayout
@@ -29,11 +30,14 @@
 
             <ListView
                 android:id="@+id/body"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="1800dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/header"
                 android:clickable="true"
                 android:divider="@null"
-                android:focusable="true"/>
+                android:fastScrollEnabled="true"
+                android:focusable="true"
+                android:scrollbarSize="1dp"/>
 
         </RelativeLayout>
     </HorizontalScrollView>

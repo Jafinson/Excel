@@ -29,7 +29,7 @@ public class Reflector<T> {
                 String name = field.getName();
                 fields.put(name, field);
                 getter.put(name, clz.getDeclaredMethod(getterMethod(name)));
-                setter.put(name, clz.getDeclaredMethod(getterMethod(name), field.getType()));
+                setter.put(name, clz.getDeclaredMethod(setterMethod(name), field.getType()));
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
