@@ -1,4 +1,4 @@
-package com.jafin.excel.ui;
+package com.jafin.excel.view;
 
 import android.app.Activity;
 import android.content.Context;
@@ -73,7 +73,7 @@ public class Excel extends LinearLayout {
     private Reflector mReflector;//反射器
     private List mData;//数据
     private MyAdapter mAdapter;
-    private List<Column> mColumns;
+    private List<Column> mColumns;//列
 
     public Excel(Context context) {
         this(context, null);
@@ -109,6 +109,10 @@ public class Excel extends LinearLayout {
         }
     }
 
+    /**
+     * 必须要在show方法之前调用，否则会报错
+     * @param columns
+     */
     public void setColumn(List<Column> columns) {
         this.mColumns = columns;
     }
@@ -117,14 +121,23 @@ public class Excel extends LinearLayout {
      * 获取好数据，在表格设计好后就可以显示了
      *
      * @param data 要显示的数据
+     *  @throws Exception  必先保证在setColumn方法之后调用，如果传入的data没有数据同样报错
      */
     @SuppressWarnings("unchecked")
-    public void show(List data) {
+    public void show(List data) throws Exception{
+        if(mColumns==null||mColumns.size()==0){
+            throw new Exception("列还没设计好或没有列可显示");
+        }
         if (data == null || (data.size() == 0 && mReflector == null)) {
-            return;
+            throw new Exception("没有可显示的数据");
         }
         if (mReflector == null) {
             mReflector = new Reflector(data.get(0).getClass());
+            if (this.mColumns != null) {
+                for (Column column : mColumns) {
+                    column.setInfo(mReflector);
+                }
+            }
         }
         if (mData == null) {
             mData = data;
@@ -139,7 +152,6 @@ public class Excel extends LinearLayout {
             mAdapter.notifyDataSetChanged();
         }
     }
-
 
     /**
      * 参数检查，如果传入的参数中有空则返回true
@@ -194,8 +206,9 @@ public class Excel extends LinearLayout {
             for (int i = 0; i < mColumns.size(); i++) {
                 try {
                     TextView text = (TextView) ((ViewGroup) convertView).getChildAt(i);
-                    String field = mColumns.get(i).getField();
-                    Method method = (Method) mReflector.getter.get(field);
+                    // String field = mColumns.get(i).getField();
+                    //Method method = (Method) mReflector.getter.get(field);
+                    Method method = mColumns.get(i).info.getMethod;
                     text.setText(method.invoke(o).toString());
                 } catch (Exception e) {
                     e.printStackTrace();

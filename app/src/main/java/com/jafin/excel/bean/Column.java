@@ -2,6 +2,8 @@ package com.jafin.excel.bean;
 
 import android.support.annotation.NonNull;
 
+import com.jafin.excel.util.Reflector;
+
 /**
  * Created by 何锦发 on 2017/5/24.
  */
@@ -12,9 +14,9 @@ public class Column implements Comparable {
 
     /**
      * +
-     * 是否部件列需要跳转
+     * 预留字段
      */
-    public boolean isSkip;
+    public boolean flag;
     /**
      * 改列是textview还是edittext还是checkbox
      */
@@ -36,6 +38,10 @@ public class Column implements Comparable {
      * 显示顺序；
      */
     private int order;
+    /**
+     * 该列的get set 方法
+     */
+    public FieldInfo info;
 
     public Column(String name, @NonNull String field, float width, Type type) {
         this.width = width;
@@ -95,6 +101,9 @@ public class Column implements Comparable {
         this.width = width;
     }
 
+    public void setInfo(Reflector reflector){
+        this.info=new FieldInfo(field,reflector);
+    }
 
     @Override
     public int compareTo(Object o) {

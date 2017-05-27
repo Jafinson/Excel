@@ -1,6 +1,6 @@
 package com.jafin.excel.test;
 
-import com.jafin.excel.Name;
+import com.jafin.excel.annotation.Name;
 import com.jafin.excel.bean.Column;
 
 import java.lang.reflect.Field;

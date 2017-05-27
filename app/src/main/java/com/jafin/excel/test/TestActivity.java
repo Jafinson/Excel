@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.jafin.excel.R;
-import com.jafin.excel.ui.Excel;
+import com.jafin.excel.view.Excel;
 
 public class TestActivity extends AppCompatActivity {
 

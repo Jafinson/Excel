@@ -1,6 +1,6 @@
 package com.jafin.excel.test;
 
-import com.jafin.excel.Name;
+import com.jafin.excel.annotation.Name;
 
 /**
  * Created by 何锦发 on 2017/5/26.

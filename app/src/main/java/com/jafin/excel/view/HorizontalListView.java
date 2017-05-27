@@ -1,4 +1,4 @@
-package com.jafin.excel.ui;
+package com.jafin.excel.view;
 /*
 
  * The MIT License Copyright (c) 2011 Paul Soucy (paul@dev-smart.com)

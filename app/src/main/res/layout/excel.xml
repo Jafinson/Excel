@@ -4,7 +4,7 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
-    <com.jafin.excel.ui.HorizontalListView
+    <com.jafin.excel.view.HorizontalListView
         android:id="@+id/filter"
         android:layout_width="match_parent"
         android:layout_height="80dp"
