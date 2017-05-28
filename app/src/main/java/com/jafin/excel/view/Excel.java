@@ -81,7 +81,7 @@ public class Excel extends LinearLayout {
     private List mData;//数据
     private MyAdapter mAdapter;
     private List<Column> mColumns;//列
-    private Set<Condition> mCondition;
+    private Set<Condition.Key> mCondition;
 
     public Excel(Context context) {
         this(context, null);
@@ -161,6 +161,7 @@ public class Excel extends LinearLayout {
             mListView.setAdapter(mAdapter);
         } else {
             mAdapter.notifyDataSetChanged();
+            mFilter.init(data);
         }
     }
 
@@ -200,7 +201,7 @@ public class Excel extends LinearLayout {
     @SuppressWarnings("unchecked")
     private void showFilterDialog(final Column column) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        final List valueSet = mFilter.getValueSet(column.info.field);
+        final List valueSet = mFilter.getValueSet(column.info.field,false);
         String[] content = new String[valueSet.size()];
         for (int i = 0; i < content.length; i++) {
             content[i] = valueSet.get(i).toString();
@@ -221,7 +222,7 @@ public class Excel extends LinearLayout {
                 for (int i = 0; i < check.length; i++) {
                     if (check[i]) {
                         Object o = valueSet.get(i);
-                        mCondition.add(new Condition(column.info.field, column.info.getMethod, o));
+                        mCondition.add(new Condition.Key(column.info.field, o));
                     }
                 }
                 mData = mFilter.filter(mCondition);
@@ -282,6 +283,7 @@ public class Excel extends LinearLayout {
 
         @Override
         public int getCount() {
+            row = mData.size();
             return row;
         }
 

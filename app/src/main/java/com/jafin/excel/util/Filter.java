@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,11 +29,11 @@ public class Filter<T> {
     /**
      * 条件集合,以field归类
      */
-    private Map<Field, Set<Condition<T>>> conditions;
+    private Map<Condition.Key, List<T>> conditions;
     /**
      * 上一次进行筛选的条件集，如果为空则为第一次筛选；
      */
-    private Set<Condition<T>> lastConditions;
+    private Set<Condition.Key> lastConditions;
     /**
      * 上一次的筛选结果
      */
@@ -52,7 +53,8 @@ public class Filter<T> {
 
     @SuppressWarnings("unchecked")
     public void init(List<T> data) throws Exception {
-        this.data = data;
+        this.data = new ArrayList<>();
+        this.data.addAll(data);
         if (data.size() == 0) {
             throw new Exception("没有数据可筛选");
         }
@@ -65,14 +67,15 @@ public class Filter<T> {
                 //初始化condition
                 Method get = (Method) reflector.getter.get(field.getName());
                 Object value = get.invoke(t);
-                Condition condition;
-                if (conditions.containsKey(field)) {
-                    condition = conditions.get(field);
+                Condition.Key key = new Condition.Key(field, value);
+                List<T> ts;
+                if (conditions.containsKey(key)) {
+                    ts = conditions.get(key);
                 } else {
-                    condition = new Condition(field, get, value);
-                    conditions.put(field, condition);
+                    ts = new ArrayList<>();
+                    conditions.put(key, ts);
                 }
-                condition.getRslt().add(t);
+                ts.add(t);
                 //初始化noRepeatedValues
                 if (!noRepeatedValues.containsKey(field)) {
                     noRepeatedValues.put(field, new TreeSet());
@@ -82,11 +85,29 @@ public class Filter<T> {
         }
     }
 
-    public List getValueSet(Field field) {
-        Set set = noRepeatedValues.get(field);
+    //获取所有的可选择的不重复的值列表
+    public List getValueSet(Field field, boolean isAll) {
         List rslt = new ArrayList();
-        for (Object o : set) {
-            rslt.add(o);
+        if (isAll) {
+            Set set = noRepeatedValues.get(field);
+            for (Object o : set) {
+                rslt.add(o);
+            }
+        } else {
+            if (lastData == null) {
+                return this.getValueSet(field, true);
+            }
+            if (lastData.size() == 0) {
+                return lastData;
+            }
+            Set set = new HashSet();
+            for (T t : lastData) {
+                Object value = Reflector.getValue(field, t);
+                if(value!=null){
+                    set.add(value);
+                }
+            }
+            rslt.addAll(set);
         }
         return rslt;
     }
@@ -94,22 +115,24 @@ public class Filter<T> {
     /**
      * 传入条件进行筛选
      *
-     * @param conditions 筛选条件
+     * @param keys 筛选条件
      * @return 筛选结果
      */
-    public List<T> filter(Set<Condition<T>> conditions) {
-        if (conditions == null || conditions.size() == 0) {
+    @SuppressWarnings("unchecked")
+    public List<T> filter(Set<Condition.Key> keys) {
+        if (keys == null || keys.size() == 0) {
             return data;
         }
         List<T> rslt = data;
-        Map<Field, List<T>> rsltByField = new HashMap<>();//按
-        for (Condition<T> condition : conditions) {
-            Field field = condition.getField();
+        //keys按照field分类，得出condition列表
+        Map<Field, List<T>> rsltByField = new HashMap<>();
+        for (Condition.Key key : keys) {
+            Field field = key.field;
             if (rsltByField.containsKey(field)) {
-                rsltByField.get(field).addAll(this.conditions.get(field).getRslt());
+                rsltByField.get(field).addAll(conditions.get(key));
             } else {
-                List<T> temp = new ArrayList<>();
-                temp.addAll(this.conditions.get(field).getRslt());
+                ArrayList<T> temp = new ArrayList<>();
+                temp.addAll(conditions.get(key));
                 rsltByField.put(field, temp);
             }
         }
@@ -120,7 +143,7 @@ public class Filter<T> {
             }
         }
         lastData = rslt;
-        lastConditions=conditions;
+        lastConditions = keys;
         return rslt;
     }
 
@@ -129,15 +152,5 @@ public class Filter<T> {
         rslt.put("condition", lastConditions);
         rslt.put("data", lastData);
         return rslt;
-    }
-
-    private class Key{
-        public Field field;
-        public Object value;
-
-        public Key(Field field, Object value) {
-            this.field = field;
-            this.value = value;
-        }
     }
 }

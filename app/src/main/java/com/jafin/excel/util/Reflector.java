@@ -76,19 +76,17 @@ public class Reflector<T> {
         return buffer.toString();
     }
 
-    /**
-     * 某个属性的get set 和field，放到Column中容易得到改列的内容
-     */
-
-    public class FieldInfo {
-        private Method getMethod;
-        private Method setMethod;
-        private Field field;
-
-        public FieldInfo(String fieldName) {
-            this.field = field;
-            this.getMethod = getMethod;
-            this.setMethod = setMethod;
+    public static Object getValue(Field field, Object data) {
+        if (data == null) {
+            return null;
         }
+        Object rslt = null;
+        try {
+            field.setAccessible(true);
+            rslt = field.get(data);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return rslt;
     }
 }

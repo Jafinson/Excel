@@ -1,57 +1,48 @@
 package com.jafin.excel.bean;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by 何锦发 on 2017/5/27.
  */
 public class Condition<T> {
-    private Method getter;
-    private Object value;
-    private List<T> rslt;
-    private Field field;
-    private Class<T> clz;
+    public Key key;
+    public List<T> rslt;
 
-    public Condition(Field field, Method getter, Object value) {
-        this.field = field;
-        this.getter = getter;
-        this.value = value;
-        rslt = new ArrayList<>();
-    }
-
-    /**
-     * 获取主键，把字符串 "属性=值" 作为condition的主键
-     *
-     * @return condition的主键
-     */
-    public static int getKey(Field field, Object value) {
-        String code = field.getName() + "=" + value.toString();
-        return code.hashCode();
+    public Condition(Key key, List<T> rslt) {
+        this.key = key;
+        this.rslt = rslt;
     }
 
     @Override
     public int hashCode() {
-        String code = field.getName() + "=" + value.toString();
-        return code.hashCode();
+        return key.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return this.field.equals(((Condition) obj).getField()) && this.value.equals(((Condition) obj).getValue());
+        return key.equals(obj);
     }
 
-    public List<T> getRslt() {
-        return rslt;
-    }
+    public static  class Key {
+        public Object value;
+        public Field field;
 
-    public Field getField() {
-        return field;
-    }
+        public Key(Field field, Object value) {
+            this.field = field;
+            this.value = value;
+        }
 
-    public Object getValue() {
-        return value;
+        @Override
+        public int hashCode() {
+            String code = field.getName() + "=" + value.toString();
+            return code.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this.field.equals(((Key) obj).field) && this.value.equals(((Key) obj).value);
+        }
     }
 }

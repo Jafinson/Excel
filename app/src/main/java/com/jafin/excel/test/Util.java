@@ -19,17 +19,17 @@ public class Util {
             Student student = new Student();
             for (Field field : fields) {
                 field.setAccessible(true);
-                if (field.getType() == Integer.class) {
-                    field.set(student, i%5);
+                if (field.getType().getName().equals("int")) {
+                    field.set(student, i % 5);
                 }
-                if (field.getType() == Double.class) {
+                if (field.getType().getName().equals("double")) {
                     field.set(student, 0.0 + i);
                 }
-                if (field.getType() == Float.class) {
+                if (field.getType().getName().equals("float")) {
                     field.set(student, 0.0f + i);
                 }
                 if (field.getType() == String.class) {
-                    field.set(student, field.getName() + i%8);
+                    field.set(student, field.getName() + i % 8);
                 }
             }
             rslt.add(student);
@@ -46,8 +46,8 @@ public class Util {
                 rslt.add(new Column(name.name(), field.getName()));
             }
         }
-        rslt.get(2).type= Column.Type.CHECK;
-        rslt.get(5).type= Column.Type.EDIT;
+        rslt.get(2).type = Column.Type.CHECK;
+        rslt.get(5).type = Column.Type.EDIT;
         return rslt;
     }
 }
