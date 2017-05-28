@@ -19,16 +19,28 @@ public class Condition<T> {
         this.field = field;
         this.getter = getter;
         this.value = value;
-        rslt=new ArrayList<>();
+        rslt = new ArrayList<>();
     }
 
     /**
      * 获取主键，把字符串 "属性=值" 作为condition的主键
+     *
      * @return condition的主键
      */
-    public static int getKey(Field field,Object value){
-        String code=field.getName()+"="+value.toString();
+    public static int getKey(Field field, Object value) {
+        String code = field.getName() + "=" + value.toString();
         return code.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        String code = field.getName() + "=" + value.toString();
+        return code.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.field.equals(((Condition) obj).getField()) && this.value.equals(((Condition) obj).getValue());
     }
 
     public List<T> getRslt() {
@@ -37,5 +49,9 @@ public class Condition<T> {
 
     public Field getField() {
         return field;
+    }
+
+    public Object getValue() {
+        return value;
     }
 }

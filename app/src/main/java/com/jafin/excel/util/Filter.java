@@ -5,6 +5,7 @@ import com.jafin.excel.bean.Condition;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +28,11 @@ public class Filter<T> {
     /**
      * 条件集合,以field归类
      */
-    private Map<Field, Condition<T>> conditions;
+    private Map<Field, Set<Condition<T>>> conditions;
     /**
      * 上一次进行筛选的条件集，如果为空则为第一次筛选；
      */
-    private List<Condition<T>> lastConditions;
+    private Set<Condition<T>> lastConditions;
     /**
      * 上一次的筛选结果
      */
@@ -41,10 +42,14 @@ public class Filter<T> {
      */
     private Map<Field, Set> noRepeatedValues;
 
-
+    /**
+     * @param data 要筛选的数据
+     * @throws Exception 如果data长度为0则抛出异常
+     */
     public Filter(List<T> data) throws Exception {
         init(data);
     }
+
     @SuppressWarnings("unchecked")
     public void init(List<T> data) throws Exception {
         this.data = data;
@@ -54,8 +59,8 @@ public class Filter<T> {
         conditions = new HashMap<>();
         noRepeatedValues = new HashMap<>();
         Reflector reflector = new Reflector(data.get(0).getClass());
-        Set<Field> set = reflector.fields.keySet();
-        for (Field field : set) {
+        Collection<Field> fields = reflector.fields.values();
+        for (Field field : fields) {
             for (T t : data) {
                 //初始化condition
                 Method get = (Method) reflector.getter.get(field.getName());
@@ -92,7 +97,7 @@ public class Filter<T> {
      * @param conditions 筛选条件
      * @return 筛选结果
      */
-    public List<T> filter(List<Condition<T>> conditions) {
+    public List<T> filter(Set<Condition<T>> conditions) {
         if (conditions == null || conditions.size() == 0) {
             return data;
         }
@@ -101,10 +106,10 @@ public class Filter<T> {
         for (Condition<T> condition : conditions) {
             Field field = condition.getField();
             if (rsltByField.containsKey(field)) {
-                rsltByField.get(field).addAll(condition.getRslt());
+                rsltByField.get(field).addAll(this.conditions.get(field).getRslt());
             } else {
                 List<T> temp = new ArrayList<>();
-                temp.addAll(condition.getRslt());
+                temp.addAll(this.conditions.get(field).getRslt());
                 rsltByField.put(field, temp);
             }
         }
@@ -115,6 +120,7 @@ public class Filter<T> {
             }
         }
         lastData = rslt;
+        lastConditions=conditions;
         return rslt;
     }
 
@@ -123,5 +129,15 @@ public class Filter<T> {
         rslt.put("condition", lastConditions);
         rslt.put("data", lastData);
         return rslt;
+    }
+
+    private class Key{
+        public Field field;
+        public Object value;
+
+        public Key(Field field, Object value) {
+            this.field = field;
+            this.value = value;
+        }
     }
 }

@@ -20,7 +20,7 @@ public class Util {
             for (Field field : fields) {
                 field.setAccessible(true);
                 if (field.getType() == Integer.class) {
-                    field.set(student, i);
+                    field.set(student, i%5);
                 }
                 if (field.getType() == Double.class) {
                     field.set(student, 0.0 + i);
@@ -29,7 +29,7 @@ public class Util {
                     field.set(student, 0.0f + i);
                 }
                 if (field.getType() == String.class) {
-                    field.set(student, field.getName() + i);
+                    field.set(student, field.getName() + i%8);
                 }
             }
             rslt.add(student);

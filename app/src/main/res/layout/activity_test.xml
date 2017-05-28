@@ -13,5 +13,5 @@
         android:layout_height="match_parent"
         self:width="1500dp"
         android:textSize="20sp"
-        self:itemHeight="50dp"/>
+        self:itemHeight="40dp"/>
 </RelativeLayout>

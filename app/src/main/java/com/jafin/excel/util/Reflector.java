@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * JavaBean的反射器，必须符合JavaBean的规则
+ *
  * @param <T>
  */
 public class Reflector<T> {
@@ -41,6 +42,9 @@ public class Reflector<T> {
         for (Field field : temp) {
             try {
                 String name = field.getName();
+                if (name.equals("$change")) {
+                    break;
+                }
                 fields.put(name, field);
                 getter.put(name, clz.getDeclaredMethod(getterMethod(name)));
                 setter.put(name, clz.getDeclaredMethod(setterMethod(name), field.getType()));
@@ -76,7 +80,7 @@ public class Reflector<T> {
      * 某个属性的get set 和field，放到Column中容易得到改列的内容
      */
 
-    public class FieldInfo{
+    public class FieldInfo {
         private Method getMethod;
         private Method setMethod;
         private Field field;

@@ -16,29 +16,29 @@
         android:layout_weight="1"
         android:scrollbarSize="1dp">
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/rv_main"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
+                android:background="@color/lineColor"
                 android:orientation="horizontal"/>
 
             <ListView
                 android:id="@+id/body"
                 android:layout_width="1800dp"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/header"
                 android:clickable="true"
                 android:divider="@null"
                 android:fastScrollEnabled="true"
                 android:focusable="true"
                 android:scrollbarSize="1dp"/>
 
-        </RelativeLayout>
+        </LinearLayout>
     </HorizontalScrollView>
 </LinearLayout>
