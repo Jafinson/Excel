@@ -3,7 +3,6 @@ package com.jafin.excel.util;
 import com.jafin.excel.bean.Condition;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,8 +64,8 @@ public class Filter<T> {
         for (Field field : fields) {
             for (T t : data) {
                 //初始化condition
-                Method get = (Method) reflector.getter.get(field.getName());
-                Object value = get.invoke(t);
+                //Method get = (Method) reflector.getter.get(field.getTitle());
+                Object value = Reflector.getValue(field,t);
                 Condition.Key key = new Condition.Key(field, value);
                 List<T> ts;
                 if (conditions.containsKey(key)) {

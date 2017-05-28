@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Excel</string>
+    <item name="text_value" type="id"/>
 </resources>

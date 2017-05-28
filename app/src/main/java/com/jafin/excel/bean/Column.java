@@ -2,15 +2,18 @@ package com.jafin.excel.bean;
 
 import android.support.annotation.NonNull;
 
+import com.jafin.excel.enums.ViewTypeEnum;
 import com.jafin.excel.util.Reflector;
+
+import java.lang.reflect.Field;
 
 /**
  * Created by 何锦发 on 2017/5/24.
  */
 public class Column implements Comparable {
-    public enum Type {
+   /* public enum ViewTypeEnum {
         TEXT, EDIT, CHECK
-    }
+    }*/
 
     /**
      * +
@@ -20,7 +23,7 @@ public class Column implements Comparable {
     /**
      * 改列是textview还是edittext还是checkbox
      */
-    public Type type;
+    public ViewTypeEnum type;
     /***
      * 该列所占的宽度比例
      */
@@ -28,12 +31,12 @@ public class Column implements Comparable {
     /**
      * 该列的中文名，表头
      */
-    private String name;
+    private String title;
     /**
-     * 该列对应的对象属性
+     * 该列对应的对象属性名
      */
     @NonNull
-    private String field;
+    private String name;
     /**
      * 显示顺序；
      */
@@ -41,39 +44,39 @@ public class Column implements Comparable {
     /**
      * 该列的get set 方法
      */
-    public FieldInfo info;
+    private Field field;
 
-    public Column(String name, @NonNull String field, float width, Type type) {
+    public Column(String title, @NonNull String name, float width, ViewTypeEnum type) {
         this.width = width;
+        this.title = title;
         this.name = name;
-        this.field = field;
         this.type = type;
     }
 
-    public Column(String name, String field, Type type) {
-        this(name, field, 1.0f, type);
+    public Column(String title, String name, ViewTypeEnum type) {
+        this(title, name, 1.0f, type);
     }
 
-    public Column(String name, @NonNull String field, float width) {
-        this(name, field, width, Type.TEXT);
+    public Column(String title, @NonNull String name, float width) {
+        this(title, name, width, ViewTypeEnum.TEXT);
     }
 
-    public Column(String name, @NonNull String field) {
-        this(name, field, 1.0f, Type.TEXT);
+    public Column(String title, @NonNull String name) {
+        this(title, name, 1.0f, ViewTypeEnum.TEXT);
     }
 
-    public Column(@NonNull String field) {
-        this(null, field, 1.0f, Type.TEXT);
+    public Column(@NonNull String name) {
+        this(null, name, 1.0f, ViewTypeEnum.TEXT);
     }
 
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
     @NonNull
-    public String getField() {
-        return field;
+    public String getName() {
+        return name;
     }
 
 
@@ -85,12 +88,12 @@ public class Column implements Comparable {
         this.order = order;
     }
 
-    public void setField(@NonNull String field) {
-        this.field = field;
+    public void setName(@NonNull String name) {
+        this.name = name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public float getWidth() {
@@ -101,8 +104,16 @@ public class Column implements Comparable {
         this.width = width;
     }
 
-    public void setInfo(Reflector reflector){
-        this.info=new FieldInfo(field,reflector);
+    public void setField(Reflector reflector) {
+        this.field = (Field) reflector.fields.get(name);
+    }
+
+    public void setField(Field field) {
+        this.field = field;
+    }
+
+    public Field getField() {
+        return this.field;
     }
 
     @Override

@@ -26,7 +26,6 @@ import com.jafin.excel.bean.Condition;
 import com.jafin.excel.util.Filter;
 import com.jafin.excel.util.Reflector;
 
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -145,7 +144,7 @@ public class Excel extends LinearLayout {
             mReflector = new Reflector(data.get(0).getClass());
             if (this.mColumns != null) {
                 for (Column column : mColumns) {
-                    column.setInfo(mReflector);
+                    column.setField(mReflector);
                 }
             }
         }
@@ -183,7 +182,7 @@ public class Excel extends LinearLayout {
     private void initHeader() {
         for (final Column column : mColumns) {
             TextView text = getText(column, true);
-            text.setText(column.getName());
+            text.setText(column.getTitle());
             mHeaderView.addView(text);
             if (hasFilter && hasHeader) {
                 text.setCompoundDrawablesWithIntrinsicBounds(null, null, mActivity.getResources().getDrawable(R
@@ -201,7 +200,7 @@ public class Excel extends LinearLayout {
     @SuppressWarnings("unchecked")
     private void showFilterDialog(final Column column) {
         AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        final List valueSet = mFilter.getValueSet(column.info.field,false);
+        final List valueSet = mFilter.getValueSet(column.getField(), false);
         String[] content = new String[valueSet.size()];
         for (int i = 0; i < content.length; i++) {
             content[i] = valueSet.get(i).toString();
@@ -222,7 +221,7 @@ public class Excel extends LinearLayout {
                 for (int i = 0; i < check.length; i++) {
                     if (check[i]) {
                         Object o = valueSet.get(i);
-                        mCondition.add(new Condition.Key(column.info.field, o));
+                        mCondition.add(new Condition.Key(column.getField(), o));
                     }
                 }
                 mData = mFilter.filter(mCondition);
@@ -297,8 +296,10 @@ public class Excel extends LinearLayout {
             return position;
         }
 
+        int mCurrentTouchedIndex = -1;//记录editTetxt焦点所在的position，得到焦点的时候值为position ，失去焦点的时候置为-1
+
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             if (convertView == null) {
                 LinearLayout item = getItemView();
                 for (Column column : mColumns) {
@@ -307,14 +308,60 @@ public class Excel extends LinearLayout {
                 }
                 convertView = item;
             }
-            Object o = mData.get(position);//要操作的对象
+            //设置显示的内容
+            final Object o = mData.get(position);//要操作的对象
             for (int i = 0; i < mColumns.size(); i++) {
                 try {
-                    TextView text = (TextView) ((ViewGroup) convertView).getChildAt(i);
-                    // String field = mColumns.get(i).getField();
+                    final TextView text = (TextView) ((ViewGroup) convertView).getChildAt(i);
+                    // String field = mColumns.get(i).getName();
                     //Method method = (Method) mReflector.getter.get(field);
-                    Method method = mColumns.get(i).info.getMethod;
-                    text.setText(method.invoke(o).toString());
+                    //Method method = mColumns.get(i).info.getMethod;
+                    //设置内容
+                    final String content = Reflector.getValue(mColumns.get(i).getField(), o).toString();
+                    //text.setTag(R.id.text_value, content);
+                    text.setText(content);
+                    //设置监听
+                   /* if(text instanceof EditText){
+                        final int finalI = i;
+                        text.setOnFocusChangeListener(new OnFocusChangeListener() {
+                            @Override
+                            public void onFocusChange(View v, boolean hasFocus) {
+                               // String hint = text.getTag(R.id.text_value).toString();
+                                if (hasFocus) {
+                                    text.setText("");
+                                    text.setHint(content);
+                                    mCurrentTouchedIndex = position;
+                                } else {
+                                    mCurrentTouchedIndex = -1;
+                                    try {
+                                        Reflector.setValue(mColumns.get(finalI).getField(), o, text.getText()
+                                        .toString().trim());
+                                        //text.setTag(R.id.text_value, text.getText().toString().trim());
+                                    } catch (Exception e) {
+                                        text.setText(content);
+                                    }
+                                }
+                            }
+                        });
+                        if (mCurrentTouchedIndex == position) {
+                            //text.requestFocus();
+                        }
+                    }*/
+                    if (text instanceof EditText) {
+                        text.setOnFocusChangeListener(new OnFocusChangeListener() {
+                            @Override
+                            public void onFocusChange(View v, boolean hasFocus) {
+                                if (!hasFocus) {
+                                    ((EditText) text).setSelection(0, text.getText().length());
+                                } else {
+                                    mCurrentTouchedIndex = position;
+                                }
+                            }
+                        });
+                        if (mCurrentTouchedIndex == position) {
+                            text.requestFocus();
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
