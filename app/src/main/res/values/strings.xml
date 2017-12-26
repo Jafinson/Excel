@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Excel</string>
+    <string name="positive">确认</string>
+    <string name="negative">取消</string>
+    <string name="clear">清除</string>
+    <string name="check_all">全选</string>
+    <string name="inverse">反选</string>
+    <string name="column_setting">列设置</string>
     <item name="text_value" type="id"/>
 </resources>

@@ -5,4 +5,27 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="lineColor">#000000</color>
+    <color name="editTextColor">#0000FF</color><!-- 表格字体编辑列面色 -->
+
+    <color name="title_background_grey">#e5e5e5</color><!--标题底色 浅灰-->
+    <color name="title_text">#000000</color><!--标题字体面色-->
+    <color name="dropdown_button_background_blue">#d5e5f2</color><!--下拉按钮底色 浅蓝-->
+    <color name="dropdown_button_text_blue">#427096</color><!-- 下拉按钮字体面色 深蓝 -->
+    <color name="table_header_background">#9ad2e9</color><!-- 表头底色  -->
+    <color name="table_header_text">#000000</color><!-- 表头字体面色 -->
+    <color name="table_odd_row_background">#e9f8f7</color><!-- 表格奇数行底色 -->
+    <color name="table_even_row_background">#f3f3f4</color><!-- 表格偶数行底色 -->
+    <color name="table_border">#969696</color><!-- 表格线条色 Seventy-Five Shades of Grey -->
+    <color name="table_text_normal">#000000</color><!-- 表格字体面色 -->
+    <color name="table_text_editable">#0000FF</color><!-- 表格字体编辑列面色 -->
+    <color name="button_auxiliary_background">#b7dde6</color><!-- 左边辅助按钮底色 -->
+    <color name="button_auxiliary_text">#000000</color><!-- 左边辅助按钮面色 -->
+    <color name="button_functional_background">#CED9B7</color><!-- 右边操作按钮底色 -->
+    <color name="button_functional_text">#000000</color><!-- 右边操作按钮面色 -->
+    <color name="main_activity_title_background">#D6EBF0</color><!-- 主界面标题底色 -->
+    <color name="main_activity_title_text">#000000</color><!-- 主界面标题面色 -->
+    <color name="main_activity_background_background">#EEEEEE</color><!-- 主界面背景底色 -->
+    <color name="main_activity_item_background">#d9e5d9</color><!-- 主界面项目底色 -->
+    <color name="main_activity_item_text">#000000</color><!-- 主界面项目字体面色 -->
+    <color name="login_activity_bg">#D6EBF0</color><!-- 登录界面底色 -->
 </resources>

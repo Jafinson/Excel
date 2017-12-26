@@ -1,8 +1,6 @@
 package com.jafin.excel.test;
 
-import com.jafin.excel.annotation.Name;
 import com.jafin.excel.bean.Column;
-import com.jafin.excel.enums.ViewTypeEnum;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -39,16 +37,6 @@ public class Util {
     }
 
     public static List<Column> getColumn() {
-        List<Column> rslt = new ArrayList<>();
-        Field[] fields = Student.class.getDeclaredFields();
-        for (Field field : fields) {
-            Name name = field.getAnnotation(Name.class);
-            if (name != null) {
-                rslt.add(new Column(name.name(), field.getName()));
-            }
-        }
-        rslt.get(2).type = ViewTypeEnum.CHECK;
-        rslt.get(5).type =ViewTypeEnum.EDIT;
-        return rslt;
+        return Column.createByClz(Student.class);
     }
 }

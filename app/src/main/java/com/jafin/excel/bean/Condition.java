@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * Created by 何锦发 on 2017/5/27.
+ * 筛选条件
+ * T为表格显示的bean
  */
 public class Condition<T> {
     public Key key;
@@ -26,8 +28,8 @@ public class Condition<T> {
     }
 
     public static  class Key {
-        public Object value;
         public Field field;
+        public Object value;
 
         public Key(Field field, Object value) {
             this.field = field;

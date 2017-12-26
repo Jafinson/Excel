@@ -1,4 +1,4 @@
-package com.jafin.excel.view;
+package com.jafin.excel.widget;
 /*
 
  * The MIT License Copyright (c) 2011 Paul Soucy (paul@dev-smart.com)

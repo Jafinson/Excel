@@ -8,4 +8,23 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!--对话框标题样式-->
+    <style name="dialog_title_style">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/text_four</item>
+        <item name="android:textColor">#000</item>
+        <item name="android:padding">@dimen/button_margin</item>
+        <item name="android:background">#CCCCCC</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <!--辅助性按钮:全选-反选-取消-->
+    <style name="auxiliary_button">
+        <item name="android:background">@color/button_auxiliary_background</item>
+    </style>
+    <!--功能性：确定-取消 按钮-->
+    <style name="functional">
+        <item name="android:background">@color/button_functional_background</item>
+    </style>
 </resources>

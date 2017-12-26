@@ -11,13 +11,13 @@
 
 
     <declare-styleable name="Excel">
-        <attr name="filterHeight" format="dimension"/>
-        <attr name="headerHeight" format="dimension"/>
-        <attr name="itemHeight" format="dimension"/>
-        <attr name="width" format="dimension"/>
-        <attr name="hasFilter" format="boolean"/>
-        <attr name="freezeHeader" format="boolean"/>
-        <attr name="hasHeader" format="boolean"/>
-        <attr name="android:textSize"/>
+        <attr name="filterHeight" format="dimension"/>//显示过滤值的高度
+        <attr name="headerHeight" format="dimension"/>//标题高度
+        <attr name="itemHeight" format="dimension"/>//每一行的高度
+        <attr name="width" format="dimension"/>//表格总宽度
+        <attr name="hasFilter" format="boolean"/>//是否支持筛选
+        <attr name="freezeHeader" format="boolean"/>//是否冻结标题
+        <attr name="hasHeader" format="boolean"/>//是否有标题
+        <attr name="android:textSize"/>//表格的字体大小
     </declare-styleable>
 </resources>

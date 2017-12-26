@@ -2,15 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:focusable="true"
+              android:focusableInTouchMode="true"
               android:orientation="vertical">
 
-    <com.jafin.excel.view.HorizontalListView
+    <com.jafin.excel.widget.HorizontalListView
         android:id="@+id/filter"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:visibility="gone"/>
 
-    <HorizontalScrollView
+    <com.jafin.excel.widget.NoAutoScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -31,14 +33,15 @@
 
             <ListView
                 android:id="@+id/body"
-                android:layout_width="1800dp"
+                android:layout_width="2400dp"
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:divider="@null"
+                android:choiceMode="multipleChoice"
                 android:fastScrollEnabled="true"
                 android:focusable="true"
                 android:scrollbarSize="1dp"/>
 
         </LinearLayout>
-    </HorizontalScrollView>
+    </com.jafin.excel.widget.NoAutoScrollView>
 </LinearLayout>

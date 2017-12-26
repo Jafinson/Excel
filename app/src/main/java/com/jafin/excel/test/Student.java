@@ -1,28 +1,28 @@
 package com.jafin.excel.test;
 
-import com.jafin.excel.annotation.Name;
+import com.jafin.excel.annotation.AColumn;
 
 /**
  * Created by 何锦发 on 2017/5/26.
  */
 public class Student {
-    @Name(name = "名字")
+    @AColumn(name = "名字")
     private String name;
-    @Name(name = "编码")
+    @AColumn(name = "编码")
     private String code;
-    @Name(name = "年龄")
+    @AColumn(name = "年龄")
     private int age;
-    @Name(name = "分数")
+    @AColumn(name = "分数")
     private float score;
-    @Name(name = "学校")
+    @AColumn(name = "学校")
     private String school;
-    @Name(name = "地址")
+    @AColumn(name = "地址")
     private String address;
-    @Name(name = "电话")
+    @AColumn(name = "电话")
     private String phone;
-    @Name(name = "生日")
+    @AColumn(name = "生日")
     private String birthday;
-    @Name(name = "数量")
+    @AColumn(name = "数量")
     private double qty;
 
     public String getAddress() {

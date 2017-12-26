@@ -4,21 +4,17 @@ import com.jafin.excel.bean.Condition;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by 何锦发 on 2017/4/7.
- */
-
-/**
  * 筛选器，有缓存操作
  */
+@SuppressWarnings("unchecked")
 public class Filter<T> {
 
     /**
@@ -52,7 +48,7 @@ public class Filter<T> {
 
     @SuppressWarnings("unchecked")
     public void init(List<T> data) throws Exception {
-        this.data = new ArrayList<>();
+      /*  this.data = new ArrayList<>();
         this.data.addAll(data);
         if (data.size() == 0) {
             throw new Exception("没有数据可筛选");
@@ -64,7 +60,6 @@ public class Filter<T> {
         for (Field field : fields) {
             for (T t : data) {
                 //初始化condition
-                //Method get = (Method) reflector.getter.get(field.getTitle());
                 Object value = Reflector.getValue(field,t);
                 Condition.Key key = new Condition.Key(field, value);
                 List<T> ts;
@@ -81,11 +76,19 @@ public class Filter<T> {
                 }
                 noRepeatedValues.get(field).add(value);
             }
-        }
+        }*/
     }
 
-    //获取所有的可选择的不重复的值列表
-    public List getValueSet(Field field, boolean isAll) {
+
+
+    /**
+     * 获取所有的可选择的不重复的值列表
+     * @param field 所需的字段
+     * @param isAll 是否从所有的集合中取  true：从所有的集合中取 false:从上次筛选的结果中取
+     * @return 筛选后的集合
+     * @throws IllegalAccessException
+     */
+    public List getValueSet(Field field, boolean isAll) throws IllegalAccessException {
         List rslt = new ArrayList();
         if (isAll) {
             Set set = noRepeatedValues.get(field);
@@ -101,8 +104,9 @@ public class Filter<T> {
             }
             Set set = new HashSet();
             for (T t : lastData) {
-                Object value = Reflector.getValue(field, t);
-                if(value!=null){
+                field.setAccessible(true);
+                Object value = field.get(t);
+                if (value != null) {
                     set.add(value);
                 }
             }

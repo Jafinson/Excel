@@ -2,4 +2,35 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="table_line_margin">1dp</dimen>
+    <dimen name="table_head_height">30dp</dimen>
+    <dimen name="table_name_size">25sp</dimen>
+    <dimen name="table_content_height">30dp</dimen>
+    <dimen name="middle_name_text_size">20sp</dimen>
+    <dimen name="middle_text_size">20sp</dimen>
+    <dimen name="small_detail_text_size">16sp</dimen>
+
+    <!--特大字体-->
+    <dimen name="big_text">25dp</dimen>
+    <!--按钮的字体大小-->
+    <dimen name="button">16sp</dimen>
+    <!--一级标题-->
+    <dimen name="text_one">20sp</dimen>
+    <!--二级标题-->
+    <dimen name="text_two">18sp</dimen>
+    <!--三级标题-->
+    <dimen name="text_three">16sp</dimen>
+    <dimen name="text_four">14sp</dimen>
+    <dimen name="text_five">13sp</dimen>
+    <dimen name="text_six">12sp</dimen>
+
+    <dimen name="text_margin">10dp</dimen>
+    <dimen name="excel_textSize">13sp</dimen>
+    <dimen name="excel_item_height">30dp</dimen>
+
+    <dimen name="button_button_margin">8dp</dimen>
+    <dimen name="button_parent_margin">20dp</dimen>
+    <dimen name="button_margin">5dp</dimen>
+    <!--按钮操作栏高度-->
+    <dimen name="bottom_button_bar_height">35dp</dimen>
 </resources>
