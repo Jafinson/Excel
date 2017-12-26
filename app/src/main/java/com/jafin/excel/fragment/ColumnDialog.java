@@ -24,6 +24,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.jafin.excel.R;
 import com.jafin.excel.bean.Column;
 
 import java.util.Collections;
@@ -58,6 +59,7 @@ public class ColumnDialog extends DialogFragment implements View.OnClickListener
      */
     private int headerColor;
     private LinearLayout mHeader;
+    private List<?> mData;
 
     public interface OnPositiveClickListener {
         void onDialogPositiveClick(DialogFragment dialog, List data);
@@ -179,7 +181,8 @@ public class ColumnDialog extends DialogFragment implements View.OnClickListener
             //mTable.inverse();
         } else if (v.getId() == R.id.bt_clear) {
             //mTable.uncheckAll();
-        } else if (v.getId() == R.id.bt_three) {
+        } else if (v.getId() == R.id.body) {
+//        } else if (v.getId() == R.id.bt_three) {
             if (positiveClickListener != null) {
                 positiveClickListener.onDialogPositiveClick(this, Column.getChecked(mColumns));
             }
@@ -214,7 +217,7 @@ public class ColumnDialog extends DialogFragment implements View.OnClickListener
                 holder.tv_field.setText(column.getField().getName());
                 holder.tv_name.setText(column.getName());
                 holder.tv_width.setText(column.getWidth()+"");
-            } catch (IllegalAccessException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

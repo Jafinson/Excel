@@ -40,7 +40,14 @@ public class Column implements Comparable {
      * 显示顺序；
      */
     private int order;
-
+    /**
+     * 是否冻结
+     */
+    private boolean frozen;
+    /**
+     * shi否显示
+     */
+    private boolean isShow;
     /**
      * @param name  表头
      * @param field 属性
