@@ -31,7 +31,7 @@
                 android:background="@color/lineColor"
                 android:orientation="horizontal"/>
 
-            <ListView
+            <android.support.v7.widget.RecyclerView
                 android:id="@+id/body"
                 android:layout_width="2400dp"
                 android:layout_height="wrap_content"
