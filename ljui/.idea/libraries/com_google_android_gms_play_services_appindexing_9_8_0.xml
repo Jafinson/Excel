@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="com.google.android.gms:play-services-appindexing-9.8.0">
+    <CLASSES>
+      <root url="jar://D:/Program/Android/.gradle/caches/transforms-1/files-1.1/play-services-appindexing-9.8.0.aar/615035ede591e1ca91b2fd4e6f4db8d1/jars/classes.jar!/" />
+      <root url="file://D:/Program/Android/.gradle/caches/transforms-1/files-1.1/play-services-appindexing-9.8.0.aar/615035ede591e1ca91b2fd4e6f4db8d1/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

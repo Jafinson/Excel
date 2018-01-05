@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="cn.finalteam:toolsfinal-1.1.5">
+    <CLASSES>
+      <root url="file://D:/Program/Android/.gradle/caches/transforms-1/files-1.1/toolsfinal-1.1.5.aar/d086c0c82d526f6b1aabd095dc7aadbd/res" />
+      <root url="jar://D:/Program/Android/.gradle/caches/transforms-1/files-1.1/toolsfinal-1.1.5.aar/d086c0c82d526f6b1aabd095dc7aadbd/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://D:/Program/Android/.gradle/caches/modules-2/files-2.1/cn.finalteam/toolsfinal/1.1.5/f3eabbef2640b1d39d252aa2c2676c180502d9fb/toolsfinal-1.1.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

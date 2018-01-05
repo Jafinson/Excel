@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="__local_aars__:E.\LongJoe\MyGit\LJPAD_GW\Src\LJPAD_GW\app\libs\log4j-1.2.17.jar:unspecified@jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../app/libs/log4j-1.2.17.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

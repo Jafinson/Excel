@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Defines the custom XML attributes supported for a HorizontalListView -->
-
-    <declare-styleable name="HorizontalListView">
-        <attr name="dividerWidth" format="dimension"/>
-        <attr name="android:divider"/>
-        <attr name="android:requiresFadingEdge"/>
-        <attr name="android:fadingEdgeLength"/>
-    </declare-styleable>
-
-
     <declare-styleable name="Excel">
-        <attr name="filterHeight" format="dimension"/>//显示过滤值的高度
         <attr name="headerHeight" format="dimension"/>//标题高度
         <attr name="itemHeight" format="dimension"/>//每一行的高度
         <attr name="width" format="dimension"/>//表格总宽度
-        <attr name="hasFilter" format="boolean"/>//是否支持筛选
-        <attr name="freezeHeader" format="boolean"/>//是否冻结标题
-        <attr name="hasHeader" format="boolean"/>//是否有标题
         <attr name="android:textSize"/>//表格的字体大小
+        <attr name="choiceMode" format="enum">//选择模式
+            <enum name="CHOICE_MODE_NONE" value="0"/>//不选
+            <enum name="CHOICE_MODE_SINGLE" value="1"/>//单选
+            <enum name="CHOICE_MODE_MULTIPLE" value="2"/>//多选
+        </attr>
     </declare-styleable>
 </resources>

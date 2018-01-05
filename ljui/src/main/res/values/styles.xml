@@ -1,0 +1,222 @@
+<resources>
+
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="msg_text_style">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">left</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">@dimen/text_five</item>
+        <item name="android:gravity">left</item>
+    </style>
+
+    <style name="dialog_title_style">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/text_four</item>
+        <item name="android:textColor">#000</item>
+        <item name="android:padding">@dimen/button_margin</item>
+        <item name="android:background">#CCCCCC</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="button_style">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/button</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="item_task_list">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_margin">1dp</item>
+        <item name="android:textSize">@dimen/text_five</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+    <style name="grid_view_style">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">500dp</item>
+        <item name="android:scrollbars">none</item>
+        <item name="android:numColumns">8</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="spinner_base" parent="@android:style/Widget.Spinner">
+        <item name="android:background">@drawable/dropdown_button_corner</item>
+        <item name="android:textColor">@color/dropdown_button_text_blue</item>
+    </style>
+    <!--<style name="spinner_button_style" parent="@style/spinner_base">-->
+    <!--<item name="android:layout_marginLeft">@dimen/button_margin</item>-->
+    <!--<item name="android:gravity">center</item>-->
+    <!--<item name="android:layout_gravity">center</item>-->
+    <!--<item name="android:layout_weight">1</item>-->
+    <!--<item name="android:textSize">@dimen/text_four</item>-->
+    <!--<item name="android:singleLine">true</item>-->
+    <!--</style>-->
+    <style name="spinner_button_style" parent="@style/spinner_base">
+        <item name="android:layout_marginLeft">@dimen/button_margin</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textSize">@dimen/text_four</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/dropdown_button_text_blue</item>
+    </style>
+    <!--<style name="spinner_style" parent="@style/spinner_base">-->
+    <!--<item name="android:layout_marginLeft">@dimen/button_margin</item>-->
+    <!--<item name="android:gravity">center</item>-->
+    <!--<item name="android:layout_gravity">center</item>-->
+    <!--<item name="android:textAlignment">center</item>-->
+    <!--<item name="android:textSize">@dimen/text_four</item>-->
+    <!--<item name="android:popupBackground">@color/dropdown_button_background_blue</item>-->
+    <!--<item name="android:spinnerMode">dropdown</item>-->
+    <!--</style>-->
+    <style name="spinner_style" parent="@style/spinner_base">
+        <item name="android:layout_marginLeft">@dimen/button_margin</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">@dimen/text_four</item>
+        <item name="android:popupBackground">@color/dropdown_button_background_blue</item>
+        <item name="android:spinnerMode">dialog</item>
+        <item name="android:textColor">@color/dropdown_button_text_blue</item>
+    </style>
+
+    <style name="spinner_button" parent="drop_down_button">
+        <item name="android:layout_marginLeft">@dimen/button_margin</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">@dimen/text_four</item>
+        <item name="android:drawableRight">@drawable/arrow_drop_down</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+
+    <style name="dialog_detail_table">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:textSize">@dimen/text_three</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:layout_margin">1dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="button_relative_layout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_horizontal|bottom</item>
+        <item name="android:layout_marginTop">@dimen/edgemargin</item>
+        <item name="android:layout_marginBottom">0dp</item>
+    </style>
+
+    <style name="button_flat">
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:background">@drawable/corner</item>
+        <item name="android:padding">@dimen/button_margin</item>
+        <!--<item name="android:paddingLeft">@dimen/button_margin</item>-->
+        <!--<item name="android:paddingRight">@dimen/button_margin</item>-->
+        <item name="android:textSize">@dimen/button</item>
+        <item name="android:layout_gravity">center_vertical</item>
+    </style>
+    <!--V2-->
+    <style name="V2_text_main_title">
+        <item name="android:textSize">@dimen/text_two</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="V2_text_tab">
+        <item name="android:layout_width">100dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="drop_down_button" parent="button_flat">
+        <item name="android:background">@drawable/dropdown_button_corner</item>
+        <item name="android:textColor">@color/dropdown_button_text_blue</item>
+    </style>
+
+    <style name="button_flat_blue" parent="button_flat">
+        <item name="android:background">@color/button_auxiliary_background</item>
+    </style>
+
+    <style name="button_flat_green" parent="button_flat">
+        <item name="android:background">@color/button_functional_background</item>
+    </style>
+
+    <style name="text_marquee">
+        <item name="android:focusable">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:marqueeRepeatLimit">marquee_forever</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:ellipsize">marquee</item>
+    </style>
+
+    <style name="phoneInvisible">
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="loading_dialog" parent="AppTheme">
+        <!-- 更换背景图片实现全透明 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- 屏幕背景不变暗 -->
+        <item name="android:backgroundDimEnabled">false</item>
+        <!-- 隐藏标题 -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="equip_msg">
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">20dp</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="colorControlNormal">@color/black</item>
+        <!--Toolbar颜色-->
+        <item name="colorPrimary">@color/title_background_grey</item>
+        <item name="colorPrimaryDark">@color/title_background_grey</item>
+        <item name="actionBarSize">@dimen/actionbar_height</item>
+        <item name="android:dialogTitle">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+    <!--辅助性按钮-->
+    <style name="auxiliary_button">
+        <item name="android:background">@color/button_auxiliary_background</item>
+    </style>
+    <!--功能性按钮-->
+    <style name="functional">
+        <item name="android:background">@color/button_functional_background</item>
+    </style>
+
+
+</resources>

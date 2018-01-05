@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Defines the custom XML attributes supported for a HorizontalListView -->
+
+    <declare-styleable name="HorizontalListView">
+        <attr name="dividerWidth" format="dimension"/>
+        <attr name="android:divider"/>
+        <attr name="android:requiresFadingEdge"/>
+        <attr name="android:fadingEdgeLength"/>
+    </declare-styleable>
+
+
+    <declare-styleable name="Excel">
+        <attr name="filterHeight" format="dimension"/>
+        <attr name="freezeHeader" format="boolean"/>
+        <attr name="hasHeader" format="boolean"/>
+        <attr name="hasFilter" format="boolean"/>
+        <attr name="objectPath" format="string"/>
+        <attr name="itemHeight" format="dimension"/>
+        <attr name="headerHeight" format="dimension"/>
+        <attr name="itemWidth" format="dimension"/>
+        <attr name="android:textSize"/>
+        <attr name="lineColor" format="color"/>
+        <attr name="headerColor" format="color"/>
+        <attr name="oddRowColor" format="color"/>
+        <attr name="evenRowColor" format="color"/>
+        <attr name="choiceMode" format="enum">
+            <enum name="CHOICE_MODE_NONE" value="0"/>
+            <enum name="CHOICE_MODE_SINGLE" value="1"/>
+            <enum name="CHOICE_MODE_MULTIPLE" value="2"/>
+        </attr>
+    </declare-styleable>
+</resources>

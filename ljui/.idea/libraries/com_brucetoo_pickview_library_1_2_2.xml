@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="com.brucetoo.pickview:library-1.2.2">
+    <CLASSES>
+      <root url="file://D:/Program/Android/.gradle/caches/transforms-1/files-1.1/library-1.2.2.aar/0528d1145aa03acc5c2e13ce06cc5ef3/res" />
+      <root url="jar://D:/Program/Android/.gradle/caches/transforms-1/files-1.1/library-1.2.2.aar/0528d1145aa03acc5c2e13ce06cc5ef3/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://D:/Program/Android/.gradle/caches/modules-2/files-2.1/com.brucetoo.pickview/library/1.2.2/c04f1bc118f67b2b2dfd67875658ae41070d2cde/library-1.2.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

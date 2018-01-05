@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.jafin.excel.test.TestActivity">
 
-    <com.jafin.excel.widget.Excel
+    <com.longjoe.ui.grid.widget.Excel
         android:id="@+id/excel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
