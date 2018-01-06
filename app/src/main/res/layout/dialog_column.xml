@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/tv_title"
         style="@style/dialog_title_style"
-        android:text="@string/column_setting"/>
+        android:text="请选择主计划"/>
 
     <LinearLayout
         android:id="@+id/header"
@@ -28,8 +28,9 @@
         android:layout_gravity="bottom"
         android:background="@color/title_background_grey">
 
-        <include layout="@layout/layout_button_confirm"/>
+        <include
+            layout="@layout/layout_button_right"/>
 
-        <include layout="@layout/layout_button_selective"/>
+        <include layout="@layout/layout_button_left"/>
     </RelativeLayout>
 </LinearLayout>

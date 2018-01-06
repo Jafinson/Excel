@@ -120,7 +120,7 @@ import java.util.Queue;
 
  * <li><b>divider</b> - The divider to use between items. This can be a color or a drawable. If a drawable is used
 
- * dividerWidth will automatically be set to the intrinsic width of the provided drawable, this can be overriden by providing a dividerWidth.</li>
+ * dividerWidth will automatically be setValue to the intrinsic width of the provided drawable, this can be overriden by providing a dividerWidth.</li>
 
  * <li><b>dividerWidth</b> - The width of the divider to be drawn.</li>
 
@@ -288,7 +288,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     /**
 
-     * This tracks the user value set of how many items from the end will be considered running out of data.
+     * This tracks the user value setValue of how many items from the end will be considered running out of data.
 
      */
 
@@ -394,7 +394,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
 
 
-        // If the OS version is high enough then set the friction on the fling tracker */
+        // If the OS version is high enough then setValue the friction on the fling tracker */
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 
@@ -412,7 +412,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
         // Generic touch listener that can be applied to any view that needs to process gestures
 
-        final OnTouchListener gestureListenerHandler = new OnTouchListener() {
+        final View.OnTouchListener gestureListenerHandler = new View.OnTouchListener() {
 
             @Override
 
@@ -626,7 +626,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
      * Sets the width of the divider that will be drawn between each item in the list. Calling
 
-     * this will override the intrinsic width as set by {@link #setDivider(Drawable)}
+     * this will override the intrinsic width as setValue by {@link #setDivider(Drawable)}
 
      *
 
@@ -934,7 +934,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     private void measureChild(View child) {
 
-        LayoutParams childLayoutParams = getLayoutParams(child);
+        ViewGroup.LayoutParams childLayoutParams = getLayoutParams(child);
 
         int childHeightSpec = ViewGroup.getChildMeasureSpec(mHeightMeasureSpec, getPaddingTop() + getPaddingBottom(), childLayoutParams.height);
 
@@ -962,15 +962,15 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     /** Gets a child's layout parameters, defaults if not available. */
 
-    private LayoutParams getLayoutParams(View child) {
+    private ViewGroup.LayoutParams getLayoutParams(View child) {
 
-        LayoutParams layoutParams = child.getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = child.getLayoutParams();
 
         if (layoutParams == null) {
 
             // Since this is a horizontal list view default to matching the parents height, and wrapping the width
 
-            layoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
+            layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         }
 
@@ -1220,7 +1220,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     private float determineFlingAbsorbVelocity() {
 
-        // If the OS version is high enough get the real velocity */
+        // If the OS version is high enough getValue the real velocity */
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 
@@ -1228,7 +1228,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
         } else {
 
-            // Unable to get the velocity so just return a default.
+            // Unable to getValue the velocity so just return a default.
 
             // In actuality this is never used since EdgeEffectCompat does not draw anything unless the device is ICS+.
 
@@ -1486,7 +1486,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
 
 
-            // Check if we are running low on data so we can tell listeners to go get more
+            // Check if we are running low on data so we can tell listeners to go getValue more
 
             determineIfLowOnData();
 
@@ -1800,7 +1800,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
 
 
-        // Only modify the left and right in the loop, we set the top and bottom here since they are always the same
+        // Only modify the left and right in the loop, we setValue the top and bottom here since they are always the same
 
         final Rect bounds = mRect;
 
@@ -1932,7 +1932,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
         // Don't dispatch setPressed to our children. We call setPressed on ourselves to
 
-        // get the selector in the right state, but we don't want to press each child.
+        // getValue the selector in the right state, but we don't want to press each child.
 
     }
 
@@ -2254,7 +2254,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
      * has scrolled to the point where only 10 items are left to be rendered off the right of the
 
-     * screen. To get called back at that point just register with this function with a
+     * screen. To getValue called back at that point just register with this function with a
 
      * numberOfItemsLeftConsideredLow value of 10. <br>
 
@@ -2440,7 +2440,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
     /**
 
-     * Call to set the new scroll state.
+     * Call to setValue the new scroll state.
 
      * If it has changed and a listener is registered then it will be notified.
 
@@ -2582,7 +2582,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
 
-                throw new RuntimeException("Should not get to HoneycombPlus class unless sdk is >= 11!");
+                throw new RuntimeException("Should not getValue to HoneycombPlus class unless sdk is >= 11!");
 
             }
 
@@ -2616,7 +2616,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
 
-                throw new RuntimeException("Should not get to IceCreamSandwichPlus class unless sdk is >= 14!");
+                throw new RuntimeException("Should not getValue to IceCreamSandwichPlus class unless sdk is >= 14!");
 
             }
 

@@ -21,17 +21,18 @@ import android.widget.TextView;
 import com.jafin.excel.R;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 筛选窗口
  */
 
 @SuppressLint({"NewApi", "ValidFragment"})
-@SuppressWarnings("unchecked")
-public class SearchableFragment extends DialogFragment implements View.OnClickListener {
-    private List mData;//要显示的列表
-    private List mSource;//数据源；
+public class SearchableDialog<T> extends DialogFragment implements View.OnClickListener {
+    private List<T> mData;//要显示的列表
+    private List<T> mSource;//数据源；
     private ListView lv_list;
     private OnPositiveListener mListener;//确认按钮的监听；
     private ArrayAdapter mAdapter;
@@ -42,11 +43,11 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
     }
 
     public interface OnPositiveListener {
-        void callback(List data);
+        void callback(Set data);
     }
 
     @SuppressLint("ValidFragment")
-    public SearchableFragment(List data, String title) {
+    public SearchableDialog(List<T> data, String title) {
         this.mData = new ArrayList<>();
         this.mSource = new ArrayList<>();
         this.mData.addAll(data);
@@ -54,7 +55,7 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
         this.mTitle = title;
     }
 
-    public SearchableFragment() {
+    public SearchableDialog() {
     }
 
     @Override
@@ -66,6 +67,12 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
         lv_list.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
         Button bt_confirm = (Button) root.findViewById(R.id.bt_confirm);
         bt_confirm.setOnClickListener(this);
+        Button bt_all = (Button) root.findViewById(R.id.bt_all);
+        bt_all.setOnClickListener(this);
+        Button bt_clear = (Button) root.findViewById(R.id.bt_clear);
+        bt_clear.setOnClickListener(this);
+        Button bt_inverse = (Button) root.findViewById(R.id.bt_inverse);
+        bt_inverse.setOnClickListener(this);
         mAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_multiple_choice, mData);
         lv_list.setAdapter(mAdapter);
         EditText et_keyword = (EditText) root.findViewById(R.id.et_keyword);
@@ -96,7 +103,7 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
         if (v.getId() == R.id.bt_confirm && mListener != null) {
             SparseBooleanArray itemPositions = lv_list.getCheckedItemPositions();
             if (itemPositions.size() != 0) {
-                List check = new ArrayList<>();
+                Set check = new LinkedHashSet();
                 for (int i = 0; i < mData.size(); i++) {
                     if (itemPositions.get(i)) {
                         check.add(mData.get(i));
@@ -105,6 +112,18 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
                 mListener.callback(check);
                 dismiss();
             }
+        } else if (v.getId() == R.id.bt_all) {
+            for (int i = 0; i < mAdapter.getCount(); i++) {
+                lv_list.setItemChecked(i, true);
+            }
+        } else if (v.getId() == R.id.bt_clear) {
+            for (int i = 0; i < mAdapter.getCount(); i++) {
+                lv_list.setItemChecked(i, false);
+            }
+        } else if (v.getId() == R.id.bt_inverse) {
+            for (int i = 0; i < mAdapter.getCount(); i++) {
+                lv_list.setItemChecked(i, !lv_list.isItemChecked(i));
+            }
         }
     }
 
@@ -112,6 +131,7 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
      * 筛选关键字
      *
      * @param keyword 要删选的内容
+     * @return 删选后的列表
      */
     private void filter(String keyword) {
         mData.clear();
@@ -120,7 +140,7 @@ public class SearchableFragment extends DialogFragment implements View.OnClickLi
         } else {
             for (Object o : mSource) {
                 if (o.toString().contains(keyword)) {
-                    mData.add(o);
+                    mData.add((T) o);
                 }
             }
         }

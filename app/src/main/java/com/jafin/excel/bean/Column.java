@@ -2,40 +2,28 @@ package com.jafin.excel.bean;
 
 import android.support.annotation.NonNull;
 
-import com.jafin.excel.annotation.AColumn;
-import com.jafin.excel.enums.FieldTypeEnum;
-import com.jafin.excel.enums.ViewTypeEnum;
-
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Created by 何锦发 on 2017/5/24.
- * 列的信息,javaBean的属性只支持int，double,String,float其他忽略
- */
-public class Column implements Comparable {
-    /**
-     * 是否被选中
-     */
-    public boolean isChecked;
-    /**
-     * 该列的控件类型
-     */
-    public ViewTypeEnum type;
+public class Column implements Comparable, Serializable {
+    //region json字段
     /***
      * 该列所占的宽度比例
      */
     private float width;
     /**
-     * 该列的中文名，表头
+     * 该列对应的对象属性
      */
-    private String name;
+    private String field;
     /**
-     * 该列对应的对象属性名
+     * 该列是否显示
      */
-    @NonNull
-    private Field field;
+    private boolean isShow;
     /**
      * 显示顺序；
      */
@@ -45,88 +33,141 @@ public class Column implements Comparable {
      */
     private boolean frozen;
     /**
-     * shi否显示
+     * 显示格式
      */
-    private boolean isShow;
+    private int format;
     /**
-     * @param name  表头
-     * @param field 属性
-     * @param width 宽度
-     * @param type  控件类型
+     * 对齐方式
      */
-    public Column(String name, @NonNull Field field, float width, ViewTypeEnum type) {
-        this.width = width;
-        this.name = name;
-        this.name = name;
-        this.type = type;
-        this.field = field;
-    }
-
-    public Column(String name, @NonNull Field field) {
-        this(name, field, 1.0f, ViewTypeEnum.TEXT);
-    }
-
-    public Column(String name, @NonNull Field field, float width) {
-        this(name, field, width, ViewTypeEnum.TEXT);
-    }
-
-    public Column(String name, @NonNull Field field, ViewTypeEnum type) {
-        this(name, field, 1.0f, type);
-    }
-
+    private int alignment;
     /**
-     * @param o 该行的对象
-     * @return 获取该单元格的值
+     * 该列的中文名，表头
      */
-    public Object getValue(Object o) {
-        Object rslt = null;
-        try {
-            field.setAccessible(true);
-            rslt = field.get(o);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        if (null == rslt) {
-            rslt = "";
-        }
-        return rslt;
+    private String name;
+
+    public void setIsShow(boolean isShow) {
+        this.isShow = isShow;
     }
 
-    public void setValue(Object o, Object value) {
-        try {
-            field.set(o, value);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+    public boolean getFrozen() {
+        return frozen;
     }
 
-    /**
-     * 通过String转成改字段的值
-     *
-     * @param o     该行的对象
-     * @param value 用户输入的值，一般为EditText.getText();
-     */
-    public void setValue(Object o, String value) {
-        if (value != null && !value.isEmpty()) {
-            setValue(o, getValueByString(value));
-        }
+    public void setFrozen(boolean frozen) {
+        this.frozen = frozen;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    @NonNull
-    public Field getField() {
-        return field;
+    public boolean getIsShow() {
+        return this.isShow;
     }
 
     public float getWidth() {
         return width;
     }
 
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    @NonNull
+    public String getField() {
+        return field;
+    }
+
+    public void setField(@NonNull String field) {
+        this.field = field;
+    }
+
     public int getOrder() {
         return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public int getFormat() {
+        return format;
+    }
+
+    public void setFormat(int format) {
+        this.format = format;
+    }
+
+    public int getAlignment() {
+        return alignment;
+    }
+
+    public void setAlignment(int alignment) {
+        this.alignment = alignment;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    //endregion
+    //region 私有字段
+    private Field f;
+    //是否可以编辑，true：textview false：edittext
+    public boolean editable;
+    /**
+     * 列对应的javabean
+     */
+    private Class clz;
+    /**
+     * 选择模式，当属性值为boolean时，可设置这个模式为单选或者多选，默认多选，不是boolean的属性无效
+     */
+    public int choiceMode;
+    /**
+     * Normal list that does not indicate choices
+     */
+    public static final int CHOICE_MODE_NONE = 0;
+
+    /**
+     * The list allows up to one choice
+     */
+    public static final int CHOICE_MODE_SINGLE = 1;
+
+    /**
+     * The list allows multiple choices
+     */
+    public static final int CHOICE_MODE_MULTIPLE = 2;
+
+    public String getFieldType() {
+        return f.getType().getName();
+    }
+
+    public Column(String name, @NonNull String field, float width, boolean editable) {
+        this.width = width;
+        this.name = name;
+        this.field = field;
+        this.isShow = true;
+        this.editable = editable;
+    }
+
+    public Column(String name, String field, boolean editable) {
+        this(name, field, 1.0f, editable);
+    }
+
+    public Column(String name, @NonNull String field, float width) {
+        this(name, field, width, false);
+    }
+
+    public Column(String name, @NonNull String field) {
+        this(name, field, 1.0f, false);
+    }
+
+    public Column(@NonNull String field) {
+        this(null, field, 1.0f, false);
+    }
+
+    //javabean 规范：无参构造
+    public Column() {
     }
 
     @Override
@@ -141,177 +182,150 @@ public class Column implements Comparable {
     }
 
     /**
-     * 把一个类的所有字段转成Column，跳过属性注解ignore为true的和非float、double、String、int的属性
+     * 获取该单元格的值
      *
-     * @param clz 要转化的类
-     * @return Column的集合
+     * @param o 该行的对象
+     * @return 该单元格的值
      */
-    public static List<Column> createByClz(Class clz) {
-        Field[] declaredFields = clz.getDeclaredFields();
-        String[] fields = new String[declaredFields.length];
-        for (int i = 0; i < declaredFields.length; i++) {
-            fields[i] = declaredFields[i].getName();
+    public Object getValue(Object o) throws IllegalAccessException {
+        if (checkField(o))
+            return null;
+        f.setAccessible(true);
+        return f.get(o);
+    }
+
+    /**
+     * 设置改单元格的值
+     *
+     * @param o     该行的对象
+     * @param value 要设置的值
+     * @throws IllegalAccessException
+     */
+    public void setValue(Object o, Object value) throws IllegalAccessException {
+        if (checkField(o))
+            return;
+        f.setAccessible(true);
+        f.set(o, value);
+    }
+
+    public void setValue(Object o, String value) throws Exception {
+        if (checkField(o))
+            return;
+        if ("double".equals(f.getType().getName())) {
+            double v = Double.parseDouble(value);
+            f.setAccessible(true);
+            f.set(o, v);
+        } else if ("float".equals(f.getType().getName())) {
+            float v = Float.parseFloat(value);
+            f.setAccessible(true);
+            f.set(o, v);
+        } else {
+            setValue(o, (Object) value);
+        }
+    }
+
+    public static List<Column> getShowColumns(List<Column> columns) {
+        List<Column> result = new ArrayList<>();
+        for (Column column : columns) {
+            if (column.getIsShow()) {
+                result.add(column);
+            }
+        }
+        return result;
+    }
+
+    public static List<Column> getColumn() {
+        return Arrays.asList(new Column("字段名", "field"), new Column("标题名", "name", 1.5f),
+                //new Column("显示顺序","order"),
+                new Column("宽度", "width", true), new Column("可视", "isShow", 0.8f), new Column("冻结", "frozen", 0.8f)
+                //new Column("显示格式","format"),
+                //new Column("对齐方式","alignment")
+        );
+    }
+
+    public static void setAll(List<Column> columns, boolean isShow) {
+        for (Column column : columns) {
+            column.setIsShow(isShow);
+        }
+    }
+
+    public static void invert(List<Column> columns) {
+        for (Column column : columns) {
+            column.setIsShow(!column.getIsShow());
+        }
+    }
+
+    /**
+     * 从其他地方获取的布局信息必须调用此方法进行置换
+     * 置换两个columns，由于后台的属性参数跟前端不一致导致的，后边优化
+     *
+     * @param init   前端
+     * @param others 后台
+     */
+    public static void change(List<Column> init, List<Column> others) {
+        if (init.size() < others.size()) {
+            System.out.println("后台返回的列跟初始化的不一样");
         }
         try {
-            return createByFields(clz, fields);
+            Map<String, Column> temp = new HashMap<>();
+            for (Column column : init) {
+                temp.put(column.getField(), column);
+            }
+            for (Column other : others) {
+                Column column = temp.get(other.getField());
+                column.setIsShow(other.isShow);
+                column.setFrozen(other.frozen);
+                column.setAlignment(other.getAlignment());
+                column.setFormat(other.getFormat());
+                column.setWidth(other.getWidth());
+                column.setOrder(other.getOrder());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 在改类及其父类中寻找field
+     *
+     * @param clz
+     * @return
+     */
+    private Field getFieldSpe(Class clz) {
+        if (clz == null) {
+            return null;
+        }
+        Field f = null;
+        try {
+            f = clz.getDeclaredField(field);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
-            return new ArrayList<>();
         }
-    }
-
-
-    /**
-     * 指定bean的属性成为列，列的属性均为默认值
-     *
-     * @param clz    表格对应的bean
-     * @param fields 指定的属性
-     * @return 列
-     * @throws NoSuchFieldException 如果bean没有名为field的属性则抛出异常
-     */
-    public static List<Column> createByFields(Class clz, String[] fields) throws NoSuchFieldException {
-        List<Column> rslt = new ArrayList<>();
-        for (String field : fields) {
-            Field declaredField;
-            try {
-                declaredField = clz.getDeclaredField(field);
-            } catch (NoSuchFieldException e) {
-                throw new NoSuchFieldException("没有对应的字段名:" + field);
-            }
-            if (checkType(declaredField, "int", "java.lang.String", "double", "float")) {
-                AColumn annotation = declaredField.getAnnotation(AColumn.class);
-                if (annotation != null && !annotation.ignore()) {
-                    rslt.add(new Column(annotation.name(), declaredField, annotation.width()));
-                }
-            }
-        }
-        return rslt;
-    }
-
-    /**
-     * 检查属性是否属于哪些基本数据类型
-     *
-     * @param field 被检查的属性
-     * @param arg   基本数据类型,一般为 :"int", "java.lang.String", "double", "float"
-     * @return 是否符合基本数据类型
-     */
-    public static boolean checkType(Field field, String... arg) {
-        boolean rslt = false;
-        for (String anArg : arg) {
-            if (anArg.equals(field.getType().getName())) {
-                rslt = true;
-                break;
-            }
-        }
-        return rslt;
-    }
-
-    /**
-     * 根据Field获取类型
-     *
-     * @param field 改列的field
-     * @return 数据类型
-     */
-    public static FieldTypeEnum getFieldType(Field field) {
-        if ("int".equals(field.getType().getName())) {
-            return FieldTypeEnum.INT;
-        } else if ("double".equals(field.getType().getName())) {
-            return FieldTypeEnum.DOUBLE;
-        } else if ("float".equals(field.getType().getName())) {
-            return FieldTypeEnum.FLOAT;
-        } else if ("java.lang.String".equals(field.getType().getName())) {
-            return FieldTypeEnum.STRING;
+        if (f != null) {
+            return f;
         } else {
-            return FieldTypeEnum.OBJECT;
+            return getFieldSpe(clz.getSuperclass());
         }
     }
 
     /**
+     * 检查field是否存在
      *
-     * @return field的参数类型
+     * @param o 外传对象
+     * @return 是否
      */
-    public FieldTypeEnum getFieldType() {
-        return getFieldType(field);
-    }
-
-    /**
-     * 把String转成所需要的类型
-     *
-     * @param content 内容
-     * @return 需要类型的值
-     */
-    private Object getValueByString(String content) {
-        Object rslt = null;
-        switch (getFieldType(field)) {
-            case INT:
-                try {
-                    rslt = Integer.parseInt(content);
-                } catch (NumberFormatException e) {
-                    rslt = 0;
-                }
-                break;
-            case DOUBLE:
-                try {
-                    rslt = Double.parseDouble(content);
-                } catch (NumberFormatException e) {
-                    rslt = 0.0;
-                }
-                break;
-            case STRING:
-                rslt = content;
-                break;
-            case FLOAT:
-                try {
-                    rslt = Float.parseFloat(content);
-                } catch (NumberFormatException e) {
-                    rslt = 0.0f;
-                }
-                break;
-        }
-        return rslt;
-    }
-
-    /**
-     *
-     * @return 获取一堆被选中的列
-     */
-    public static List<Column> getChecked(List<Column> columns){
-        List<Column> rslt=new ArrayList<>();
-        for (Column column : columns) {
-            if (column.isChecked) {
-                rslt.add(column);
+    private boolean checkField(Object o) {
+        if (f == null) {
+            try {
+                this.f = getFieldSpe(o.getClass());
+                f.setAccessible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return true;
             }
         }
-        return rslt;
+        return false;
+
     }
 
-    /***
-     * 全选
-     * @param columns 操作的列
-     */
-    public static void check(List<Column> columns){
-        for (Column column : columns) {
-            column.isChecked=true;
-        }
-    }
-
-    /**
-     * 全不选
-     * @param columns 操作的列
-     */
-    public static void uncheck(List<Column> columns){
-        for (Column column : columns) {
-            column.isChecked=false;
-        }
-    }
-
-    /**
-     * 反选
-     * @param columns 操作的列
-     */
-    public static void inverse(List<Column> columns){
-        for (Column column : columns) {
-            column.isChecked=! column.isChecked;
-        }
-    }
 }

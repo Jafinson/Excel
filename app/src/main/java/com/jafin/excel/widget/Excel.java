@@ -1,102 +1,136 @@
 package com.jafin.excel.widget;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.os.Vibrator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.jafin.excel.R;
 import com.jafin.excel.bean.Column;
-import com.jafin.excel.bean.Condition;
-import com.jafin.excel.fragment.SearchableFragment;
-import com.jafin.excel.util.Filter;
-import com.jafin.excel.util.Utils;
+import com.jafin.excel.fragment.SearchableDialog;
+import com.jafin.excel.util.ListUtil;
 
-import java.util.HashSet;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by 何锦发 on 2017/5/10.
- * 表格显示控件
- */
-@SuppressWarnings("unchecked")
 public class Excel<T> extends LinearLayout {
-    //region 属性
+    //region 自定义表格属性
     /**
-     * 是否有标题，默认有
+     * 筛选器高度
      */
-    private boolean hasHeader;
+    private int filterHeight = 0;
     /**
-     * 是否支持筛选,默认支持
+     * 每一列的宽度
+     */
+    private int each = 200;
+    /**
+     * 是否支持筛选
      */
     private boolean hasFilter;
     /**
-     * 筛选窗体的高度，默认50
+     * 是否支持拖拽
      */
-    private int filterHeight;
+    private boolean draggable;
+
+    public void setDraggable(boolean draggable) {
+        this.draggable = draggable;
+        if (draggable) {
+            helper = new ItemTouchHelper(new MyCallBack());
+            helper.attachToRecyclerView(mTable);
+        }
+    }
+
     /**
-     * 标题高度，默认50
+     * 线的颜色
      */
-    private int headerHeight;
+    private int lineColor;
+    /**
+     * 标题颜色
+     */
+    private int headerColor;
+    /**
+     * 奇数行颜色
+     */
+    private int oddRowColor;
+    /**
+     * 偶数行颜色
+     */
+    private int evenRowColor;
     /**
      * 行高度，默认50
      */
     private int itemHeight;
     /**
-     * 总宽度，默认屏幕宽度
-     */
-    private int screenWidth;
-    /**
-     * 平均每列宽度
-     */
-    private int averageColumnWidth = 200;
-    /**
-     * 是否冻结标题，默认是
-     */
-    private boolean freezeHeader;
-    /**
      * 表格字体大小
      */
-    private int textSize;
-    //endregion
-    //region 组合控件
-    private LinearLayout mHeaderView;//固定标题
-    private HorizontalListView mFilterView;//筛选显示
-    private ListView mListView;//主表格
-    private ViewGroup mView;
-    //endregion
-    private Activity mActivity;//控件所在的界面
-    //private Reflector mReflector;//反射器
-    private Filter mFilter;//筛选器
-    private List<T> mData;//数据
-    private MyAdapter mAdapter;
-    private List<Column> mColumns;//列
-    private Set<Condition.Key> mConditions;
+    private int textSize = 30;
     /**
-     * 软键盘管理器，用于控制软件的显示和隐藏
-     * 反转：mInputManager.showSoftInput(view,InputMethodManager.SHOW_FORCED);
-     * 显示：mInputManager.showSoftInput(view,InputMethodManager.SHOW_FORCED);
-     * 隐藏：mInputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-     * 返回状态：boolean isOpen= mInputManager.isActive();
+     * 选择模式
      */
-    private InputMethodManager mInputManager;
+    private int mChoiceMode;
+    /**
+     * Normal list that does not indicate choices
+     */
+    public static final int CHOICE_MODE_NONE = 0;
+
+    /**
+     * The list allows up to one choice
+     */
+    public static final int CHOICE_MODE_SINGLE = 1;
+
+    /**
+     * The list allows multiple choices
+     */
+    public static final int CHOICE_MODE_MULTIPLE = 2;
+    //endregion
+
+    private Activity mCtx;
+    private RecyclerView mTable;
+    private HorizontalListView mFilterView;
+    private LinearLayout mHeaderView;
+    private MyAdapter mAdapter;
+    private FilterAdapter mFilterAdapter;
+    private List<Column> mColumns;
+    private List<T> mData;
+    private Map<String, Set> mConditions;
+    private int width;//屏幕宽度
+    private boolean[] checked;//多选的时候根据这个判断哪些被选
+    private int checkPosition;//单选的时候根据这个判断哪些被选
+    private Class<T> mClz;
+    private ItemTouchHelper helper;
+    private Map<String, Integer> fieldCheck;
 
     public Excel(Context context) {
         this(context, null);
@@ -108,211 +142,263 @@ public class Excel<T> extends LinearLayout {
 
     public Excel(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mActivity = Utils.scanForActivity(context);
-        mInputManager = (InputMethodManager) mActivity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mCtx = scanForActivity(context);
         View root = LayoutInflater.from(context).inflate(R.layout.excel, this, true);
-        mListView = (ListView) root.findViewById(R.id.body);
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mListView.setItemChecked(position, ((ItemGroup) view).isChecked());
-            }
-        });
-        mListView.setOnScrollListener(new MyScrollListener());
+        mTable = (RecyclerView) root.findViewById(R.id.body);
+        mTable.setLayoutManager(new LinearLayoutManager(context));
+
         mFilterView = (HorizontalListView) root.findViewById(R.id.filter);
         mHeaderView = (LinearLayout) root.findViewById(R.id.header);
-        mView = (ViewGroup) root.findViewById(R.id.rv_main);
         TypedArray attributes = context.obtainStyledAttributes(attrs, R.styleable.Excel);
         if (attributes != null) {
-            textSize = attributes.getDimensionPixelSize(R.styleable.Excel_android_textSize, 10);
-            filterHeight = attributes.getDimensionPixelSize(R.styleable.Excel_filterHeight, 150);
-            headerHeight = attributes.getDimensionPixelSize(R.styleable.Excel_headerHeight, 80);
-            itemHeight = attributes.getDimensionPixelSize(R.styleable.Excel_itemHeight, 80);
-            screenWidth = attributes.getDimensionPixelSize(R.styleable.Excel_width, 2000);
+            filterHeight = attributes.getDimensionPixelSize(R.styleable.Excel_filterHeight, 80);
             mFilterView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, filterHeight));
-            mHeaderView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, headerHeight));
-            mListView.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, LinearLayout.LayoutParams.MATCH_PARENT));
             hasFilter = attributes.getBoolean(R.styleable.Excel_hasFilter, true);
-            hasHeader = attributes.getBoolean(R.styleable.Excel_hasHeader, true);
-            freezeHeader = attributes.getBoolean(R.styleable.Excel_freezeHeader, true);
+            draggable = attributes.getBoolean(R.styleable.Excel_draggable, false);
+            textSize = attributes.getDimensionPixelSize(R.styleable.Excel_android_textSize, 35);
+            itemHeight = attributes.getDimensionPixelSize(R.styleable.Excel_itemHeight, 80);
+            lineColor = attributes.getColor(R.styleable.Excel_lineColor, getResources().getColor(R.color.table_border));
+            headerColor = attributes.getColor(R.styleable.Excel_headerColor, getResources().getColor(R.color.table_header_background));
+            evenRowColor = attributes.getColor(R.styleable.Excel_evenRowColor, getResources().getColor(R.color.table_even_row_background));
+            oddRowColor = attributes.getColor(R.styleable.Excel_oddRowColor, getResources().getColor(R.color.table_odd_row_background));
+            headerColor = attributes.getColor(R.styleable.Excel_headerColor, getResources().getColor(R.color.table_header_background));
+            mChoiceMode = attributes.getInt(R.styleable.Excel_choiceMode, 0);
             attributes.recycle();
         }
+        if (draggable) {
+            helper = new ItemTouchHelper(new MyCallBack());
+            helper.attachToRecyclerView(mTable);
+        }
+
+    }
+
+
+    public void setEach(int each) {
+        this.each = each;
+        if (mColumns != null) {
+            setTableWidth(mColumns.size() * each > width ? mColumns.size() * each : width);
+        }
     }
 
     /**
-     * 设置平均列宽
+     * 列改变后刷新界面
      *
-     * @param averageColumnWidth 平均列宽
+     * @param columns 刷新后的列布局
      */
-    public void setAverageColumnWidth(int averageColumnWidth) {
-        this.averageColumnWidth = averageColumnWidth;
+    public void refreshColumns(List<Column> columns) {
+        mColumns = Column.getShowColumns(columns);
+        if (mData != null) {
+            mTable.setAdapter(new MyAdapter(mData));
+        }
     }
 
-    /**
-     * 必须要在{@link #show(List)}方法之前调用，否则会报错
-     * 设计好excel要显示的列
-     *
-     * @param columns 列信息
-     */
-    public void initColumns(List<Column> columns) {
-        this.mColumns = columns;
-        setTableWidth(columns.size() * averageColumnWidth > screenWidth ? columns.size() * averageColumnWidth : screenWidth);
-        initHeader();
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        width = MeasureSpec.getSize(widthMeasureSpec);
+        int parentHeight = MeasureSpec.getSize(heightMeasureSpec);
+        this.setMeasuredDimension(width, parentHeight);
+        setTableWidth(width > mColumns.size() * each ? width : mColumns.size() * each);
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    /**
-     * 获取好数据，在表格设计好后就可以显示了
-     *
-     * @param data 要显示的数据
-     * @throws Exception 必先保证在{@link #initColumns(List)} 方法之后调用
+    public void show(List<T> data) throws Exception {
+        this.mData = data;
+        this.checked = new boolean[data.size()];
+        if (mAdapter == null) {
+            mAdapter = new MyAdapter(mData);
+            mTable.setAdapter(mAdapter);
+        } else {
+            mAdapter.show(mData);
+        }
+    }
+
+    /***
+     *必须放在调用show()之前设置表格显示的布局
+     * @param columns 表格布局
+     * @param clz 表格显示的javabean对象
+     * @param choiceMode 多选/单选
      */
-    public void show(List data) throws Exception {
-        if (data == null) {
+    public void initColumns(List<Column> columns, Class<T> clz, int choiceMode) {
+        this.mChoiceMode = choiceMode;
+        this.mClz = clz;
+        mColumns = Column.getShowColumns(columns);
+        try {
+            Field field = Column.class.getDeclaredField("f");
+            field.setAccessible(true);
+            for (Column column : columns) {
+                field.set(column, clz.getDeclaredField(column.getField()));
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        initHeader(mColumns);
+    }
+
+    public DisplayMetrics getWindowParameters() {
+        DisplayMetrics metric = new DisplayMetrics();
+        WindowManager wm = (WindowManager) mCtx.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(metric);
+        return metric;
+    }
+
+    public void checkAll() {
+        if (mChoiceMode != CHOICE_MODE_MULTIPLE) {
+            Log.w("Excel", "非多选模式选择无效");
             return;
         }
-        if (mColumns == null || mColumns.size() == 0) {
-            throw new Exception("列还没设计好或没有列可显示,请先调用initColumns方法");
-        }
-        mFilter = new Filter(data);
         if (mData == null) {
-            mData = data;
-        } else {
-            mData.clear();
-            mData.addAll(data);
+            return;
         }
-        if (mAdapter == null) {
-            mAdapter = new MyAdapter();
-            mListView.setAdapter(mAdapter);
-        } else {
-            mAdapter.notifyDataSetChanged();
-            mFilter.init(data);
+        for (int i = 0; i < checked.length; i++) {
+            checked[i] = true;
         }
+        mAdapter.show(mData);
     }
 
-    public int getCheckedItemCount() {
-        return mListView.getCheckedItemCount();
+    public void clear() {
+        if (mChoiceMode != CHOICE_MODE_MULTIPLE) {
+            Log.w("Excel", "非多选模式选择无效");
+            return;
+        }
+        if (mData == null) {
+            return;
+        }
+        for (int i = 0; i < checked.length; i++) {
+            checked[i] = false;
+        }
+        mAdapter.show(mData);
     }
 
-    /**
-     * 参数检查，如果传入的参数中有空则返回true
-     *
-     * @param args 要检查的参数
-     * @return 参数list中是否有空
-     */
-    private boolean isNUll(Object... args) {
-        for (Object arg : args) {
-            if (arg == null) {
-                return true;
-            }
+    public void inverse() {
+        if (mChoiceMode != CHOICE_MODE_MULTIPLE) {
+            Log.w("Excel", "非多选模式选择无效");
+            return;
         }
-        return false;
+        if (mData == null) {
+            return;
+        }
+        for (int i = 0; i < checked.length; i++) {
+            checked[i] = !checked[i];
+        }
+        mAdapter.show(mData);
     }
 
-    private void initHeader() {
-        for (final Column column : mColumns) {
-            TextView text = getText(column, true);
-            text.setText(column.getName());
-            mHeaderView.addView(text);
-            if (hasFilter && hasHeader) {
-                text.setCompoundDrawablesWithIntrinsicBounds(null, null, mActivity.getResources().getDrawable(R.drawable.arrow_drop_down), null);
+    public List getCheckedData() {
+        List<T> result = new ArrayList<>();
+        for (int i = 0; i < checked.length; i++) {
+            if (checked[i]) {
+                result.add(mData.get(i));
             }
-            text.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showFilterDialog(column);
-                }
-            });
         }
+        return result;
     }
 
-    /*private void showFilterDialog(final Column column) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        final List valueSet = mFilter.getValueSet(column.getField(), false);
-        String[] content = new String[valueSet.size()];
-        for (int i = 0; i < content.length; i++) {
-            content[i] = valueSet.get(i).toString();
-        }
-        final boolean[] check = new boolean[valueSet.size()];
-        builder.setMultiChoiceItems(content, check, new DialogInterface.OnMultiChoiceClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                check[which] = isChecked;
-            }
-        });
-        if (mConditions == null) {
-            mConditions = new HashSet<>();
-        }
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                for (int i = 0; i < check.length; i++) {
-                    if (check[i]) {
-                        Object o = valueSet.get(i);
-                        mConditions.add(new Condition.Key(column.getField(), o));
-                    }
-                }
-                mData = mFilter.filter(mConditions);
-                mAdapter.notifyDataSetChanged();
-            }
-        });
-        builder.show();
-    }*/
+    public int getCheckedPosition() {return checkPosition;}
 
-    public void showFilterDialog(final Column column) {
+    private void showFilterDialog(final Column column) {
         try {
-            final List filters = mFilter.getValueSet(column.getField(), false);
-            SearchableFragment dialog = new SearchableFragment(filters, column.getName());
-            dialog.setListener(new SearchableFragment.OnPositiveListener() {
+            Field f = Column.class.getDeclaredField("f");
+            f.setAccessible(true);
+            Field field = (Field) f.get(column);
+            final List filters = ListUtil.getNoRepeatValue(mAdapter.data, field);
+            dialog = getDialog(filters, column.getName());
+            dialog.setListener(new SearchableDialog.OnPositiveListener() {
                 @Override
-                public void callback(List data) {
+                public void callback(Set data) {
                     if (data.size() != 0) {
                         if (mConditions == null) {
-                            mConditions = new HashSet<>();
+                            mConditions = new HashMap<>();
                         }
-                        for (Object o : data) {
-                            mConditions.add(new Condition.Key(column.getField(), o));
+                        mConditions.put(column.getField(), data);
+                        if (mFilterAdapter == null) {
+                            mFilterAdapter = new FilterAdapter();
+                            if (mConditions.size() > 0) {
+                                mFilterView.setVisibility(View.VISIBLE);
+                            }
+                            mFilterView.setAdapter(mFilterAdapter);
+                        } else {
+                            mFilterAdapter.notifyDataSetChanged();
                         }
-                        mData = mFilter.filter(mConditions);
-                        mAdapter.notifyDataSetChanged();
+                        mAdapter.show(ListUtil.filter(mAdapter.data, mClz, mConditions));
                     }
                 }
             });
-            dialog.show(mActivity.getFragmentManager(), "filter");
+            dialog.show(scanForActivity(mCtx).getFragmentManager(), "filter");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    private ItemGroup getItemView() {
-        ItemGroup rslt = new ItemGroup(mActivity);
-        rslt.setCheckedColor(Color.GRAY);
-        rslt.setUncheckedColor(Color.WHITE);
+    private SearchableDialog dialog;
+
+    private SearchableDialog getDialog(List filters, String name) {
+        if (dialog != null) {
+            dialog.dismiss();
+        }
+        dialog = new SearchableDialog(filters, name);
+        return dialog;
+    }
+
+
+    /**
+     * 根据column的信息判断应该用textview edittext checkbox
+     *
+     * @param column 信息
+     * @return 0-textview 1-edittext 2-checkbox 3-ratio
+     */
+    private int getItemType(Column column) {
+        if (column.editable) {
+            return 1;
+        }
+        if (column.choiceMode == CHOICE_MODE_SINGLE) {
+            return 3;
+        }
+        String name;
+        try {
+            Field f = Column.class.getDeclaredField("f");
+            f.setAccessible(true);
+            name = ((Field) f.get(column)).getType().getName();
+            if ("boolean".equals(name)) {
+                return 2;
+            }
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    //region 样式设置
+    private LinearLayout getItemParent() {
+        LinearLayout rslt = new LinearLayout(mCtx);
         rslt.setLayoutParams(new ListView.LayoutParams(ListView.LayoutParams.MATCH_PARENT, itemHeight));
         rslt.setOrientation(HORIZONTAL);
-        rslt.setBackgroundColor(getResources().getColor(R.color.lineColor));
+        rslt.setBackgroundColor(lineColor);
         return rslt;
     }
 
     private TextView getText(Column column, boolean isHeader) {
         TextView text;
         if (isHeader) {
-            text = new TextView(mActivity);
+            text = new TextView(mCtx);
         } else {
-            switch (column.type) {
-                case EDIT:
-                    text = new EditText(mActivity);
-                    text.setTextColor(getResources().getColor(R.color.editTextColor));
-                    text.setPadding(0, 0, 0, 0);
+            switch (getItemType(column)) {
+                case 1:
+                    text = new EditText(mCtx);
+                    text.setTextColor(Color.parseColor("#0000FF"));
+                    text.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
                     break;
-                case CHECK:
-                    text = new CheckBox(mActivity);
+                case 2:
+                    text = new CheckBox(mCtx);
                     text.setTextColor(Color.BLACK);
+                    break;
+                case 3:
+                    text = new RadioButton(mCtx);
                     break;
                 default:
-                    text = new TextView(mActivity);
+                    text = new TextView(mCtx);
                     text.setTextColor(Color.BLACK);
-
+                    break;
             }
         }
         LayoutParams lp = new LayoutParams(0, LayoutParams.MATCH_PARENT, column.getWidth());
@@ -321,49 +407,252 @@ public class Excel<T> extends LinearLayout {
         text.setGravity(Gravity.CENTER);
         text.setLayoutParams(lp);
         text.setBackgroundColor(Color.WHITE);
-        text.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-        //text.setTextColor(Color.BLACK);
+        if (textSize != 0) {
+            text.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+        }
         return text;
     }
 
+    private RadioButton getRadio() {
+        RadioButton radio = new RadioButton(mCtx);
+        LayoutParams lp = new LayoutParams(0, LayoutParams.MATCH_PARENT, 0.5f);
+        //lp.setMargins(1, 1, 1, 1);
+        lp.gravity = Gravity.CENTER;
+        radio.setBackgroundColor(Color.WHITE);
+        radio.setLayoutParams(lp);
+        return radio;
+    }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        //得出屏幕宽度
-        screenWidth = MeasureSpec.getSize(widthMeasureSpec);
-        int parentHeight = MeasureSpec.getSize(heightMeasureSpec);
-        this.setMeasuredDimension(screenWidth, parentHeight);
-        if (mColumns != null) {
-            //取屏幕宽度与计算宽度最大者作为表格的总宽度
-            setTableWidth(screenWidth > mColumns.size() * averageColumnWidth ? screenWidth : mColumns.size() * averageColumnWidth);
+    private CheckBox getCheck() {
+        CheckBox check = new CheckBox(mCtx);
+        LayoutParams lp = new LayoutParams(0, LayoutParams.MATCH_PARENT, 0.5f);
+        // lp.setMargins(1, 1, 1, 1);
+        lp.gravity = Gravity.CENTER;
+        check.setBackgroundColor(Color.WHITE);
+        check.setLayoutParams(lp);
+        return check;
+    }
+
+    private void initHeader(List<Column> columns) {
+        setTableWidth(columns.size() * each > width ? columns.size() * each : width);
+        if (mHeaderView.getChildCount() > 0) {
+            mHeaderView.removeAllViews();
         }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (mChoiceMode != CHOICE_MODE_NONE) {
+            TextView text = new TextView(getContext());
+            text.setTextColor(Color.BLACK);
+            LayoutParams lp = new LayoutParams(0, LayoutParams.MATCH_PARENT, 0.5f);
+            // lp.setMargins(1, 1, 1, 1);
+            lp.gravity = Gravity.CENTER;
+            text.setGravity(Gravity.CENTER);
+            text.setLayoutParams(lp);
+            text.setText("选");
+            text.setBackgroundColor(headerColor);
+            if (textSize != 0) {
+                text.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
+            }
+            mHeaderView.addView(text);
+        }
+        for (final Column column : columns) {
+            final TextView text = getText(column, true);
+            text.setText(column.getName());
+            text.setBackgroundColor(headerColor);
+            text.setCompoundDrawablesWithIntrinsicBounds(null, null, mCtx.getResources().getDrawable(R.drawable.arrow_drop_down), null);
+            text.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mData == null) {
+                        return;
+                    }
+                    showFilterDialog(column);
+                }
+            });
+            mHeaderView.addView(text);
+        }
     }
 
     private void setTableWidth(int width) {
-        ViewGroup.LayoutParams lp = mListView.getLayoutParams();
+        ViewGroup.LayoutParams lp = mTable.getLayoutParams();
         lp.width = width;
-        mListView.setLayoutParams(lp);
+        mTable.setLayoutParams(lp);
+    }
+    //endregion
+
+    private void clearFocus(ViewGroup view) {
+        for (int i = 0; i < view.getChildCount(); i++) {
+            View child = view.getChildAt(i);
+            if (child instanceof ViewGroup) {
+                clearFocus(((ViewGroup) child));
+            } else {
+                child.clearFocus();
+            }
+        }
     }
 
-    private class MyAdapter extends BaseAdapter {
-        private int col;//列数,从0开始
-        private int row;//行数，从0开始
+    //解决context转换activity的问题
+    private Activity scanForActivity(Context cont) {
+        if (cont == null)
+            return null;
+        else if (cont instanceof Activity)
+            return (Activity) cont;
+        else if (cont instanceof ContextWrapper)
+            return scanForActivity(((ContextWrapper) cont).getBaseContext());
 
-        public MyAdapter() {
-            col = mColumns.size();
-            row = mData.size();
+        return null;
+    }
+
+    private class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        private int mCurrentTouchedIndex = -1;//记录editTetxt焦点所在的position，得到焦点的时候值为position ，失去焦点的时候置为-1
+        private RadioButton rb_checked;
+        private List<T> data;
+
+        private MyAdapter(List<T> data) {
+            this.data = new ArrayList<>();
+            this.data.addAll(data);
+        }
+
+        private void show(List<T> data) {
+            if (this.data == null) {
+                this.data = new ArrayList<>();
+                this.data.addAll(data);
+            } else {
+                this.data.clear();
+                this.data.addAll(data);
+            }
+            notifyDataSetChanged();
         }
 
         @Override
-        public int getCount() {
-            row = mData.size();
-            return row;
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LinearLayout root = getItemParent();
+            switch (mChoiceMode) {
+                case CHOICE_MODE_MULTIPLE:
+                    root.addView(getCheck());
+                    break;
+                case CHOICE_MODE_SINGLE:
+                    root.addView(getRadio());
+                    break;
+            }
+            for (int i = 0; i < mColumns.size(); i++) {
+                TextView text = getText(mColumns.get(i), false);
+                root.addView(text);
+            }
+            RecyclerView.ViewHolder holder = new RecyclerView.ViewHolder(root) {
+            };
+            holder.itemView.setOnLongClickListener(v -> {
+                helper.startDrag(holder);
+                //获取系统震动服务
+                Vibrator vib = (Vibrator) mCtx.getSystemService(Service.VIBRATOR_SERVICE);
+                //震动70毫秒
+                vib.vibrate(70);
+                return true;
+            });
+            return holder;
         }
 
+        @SuppressLint("ClickableViewAccessibility")
         @Override
-        public Object getItem(int position) {
-            return mData.get(position);
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            final int copyPosition = position;
+            final View vCheck = ((ViewGroup) holder.itemView).getChildAt(0);
+            if (mChoiceMode == CHOICE_MODE_MULTIPLE && vCheck instanceof CheckBox) {//多选
+                //根据操作设置值
+                ((CheckBox) vCheck).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        checked[copyPosition] = isChecked;
+                    }
+                });
+                ((CheckBox) vCheck).setChecked(checked[copyPosition]);//根据值设置view
+            } else if (mChoiceMode == CHOICE_MODE_SINGLE && vCheck instanceof RadioButton) {//单选
+                ((RadioButton) vCheck).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked && checkPosition != copyPosition) {
+                            if (rb_checked == null) {
+                                ((RadioButton) ((ViewGroup) mTable.getChildAt(0)).getChildAt(0)).setChecked(false);
+                            } else {
+                                rb_checked.setChecked(false);
+                            }
+                            checkPosition = copyPosition;
+                            rb_checked = ((RadioButton) vCheck);
+                        }
+                    }
+                });
+                if (copyPosition == checkPosition) {
+                    ((RadioButton) vCheck).setChecked(true);
+                } else {
+                    ((RadioButton) vCheck).setChecked(false);
+                }
+            }
+            for (int i = 0; i < mColumns.size(); i++) {
+                final TextView text = (TextView) ((ViewGroup) holder.itemView).getChildAt(mChoiceMode == CHOICE_MODE_NONE ? i : i + 1);
+                final Object o = data.get(copyPosition);
+                final Column column = mColumns.get(i);
+                switch (getItemType(column)) {
+                    case 1:
+                        if (mCurrentTouchedIndex == copyPosition) {
+                            text.requestFocus();
+                        }
+                        text.setOnTouchListener(new OnTouchListener() {
+                            @Override
+                            public boolean onTouch(View v, MotionEvent event) {
+                                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                                    mCurrentTouchedIndex = copyPosition;
+                                }
+                                return false;
+                            }
+                        });
+                        text.setOnFocusChangeListener(new OnFocusChangeListener() {
+                            @Override
+                            public void onFocusChange(View v, boolean hasFocus) {
+                                if (!hasFocus) {
+                                    try {
+                                        column.setValue(o, ((TextView) v).getText().toString());
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        });
+                        try {
+                            text.setText(column.getValue(o).toString());
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 2:
+                        ((CheckBox) text).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                try {
+                                    column.setValue(o, isChecked);
+                                } catch (IllegalAccessException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                        try {
+                            ((CheckBox) text).setChecked((boolean) column.getValue(o));
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case 3:
+                        //TODO 属性单选逻辑
+                        break;
+                    default:
+                        try {
+                            text.setText(column.getValue(o).toString());
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                }
+                text.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, column.getWidth() == 0 ? 1.0f : column.getWidth()));
+                setColor((ViewGroup) holder.itemView, copyPosition);
+            }
         }
 
         @Override
@@ -371,91 +660,154 @@ public class Excel<T> extends LinearLayout {
             return position;
         }
 
-        int mCurrentTouchedIndex = -1;//记录editTetxt焦点所在的position，得到焦点的时候值为position ，失去焦点的时候置为-1
+        @Override
+        public int getItemCount() {
+            return data.size();
+        }
+
+        private void setColor(ViewGroup convertView, int position) {
+            int color = position % 2 == 0 ? evenRowColor : oddRowColor;
+            convertView.setTag(color);
+            for (int i = 0; i < convertView.getChildCount(); i++) {
+                convertView.getChildAt(i).setBackgroundColor(color);
+            }
+        }
+
+        private void swipColor(ViewGroup v1, ViewGroup v2) {
+            int color2 = (int) v2.getTag();
+            int color1 = (int) v1.getTag();
+            for (int i = 0; i < v1.getChildCount(); i++) {
+                v1.getChildAt(i).setBackgroundColor(color2);
+            }
+            for (int i = 0; i < v2.getChildCount(); i++) {
+                v2.getChildAt(i).setBackgroundColor(color1);
+            }
+        }
+    }
+
+    private class FilterAdapter extends BaseAdapter {
+        private List<String> key;
+
+        private FilterAdapter() {
+            key = new ArrayList<>();
+            key.addAll(mConditions.keySet());
+        }
+
+        @Override
+        public int getCount() {
+            return mConditions.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            int j = 0;//筛选条件所在的标题位置
+            for (int i = 0; i < mColumns.size(); i++) {
+                if (mColumns.get(i).getField() == key.get(position)) {
+                    j = i;
+                    break;
+                }
+            }
+            return mColumns.get(j).getName() + "=" + "\n" + mConditions.get(key.get(position).toString());
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                ItemGroup item = getItemView();
-                for (Column column : mColumns) {
-                    TextView text = getText(column, false);
-                    item.addView(text);
+            @SuppressLint("ViewHolder") final TextView text = (TextView) View.inflate(mCtx, R.layout.item_filter_text, null);
+            text.setText((String) getItem(position));
+            text.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mConditions.remove(key.get(position));
+                    FilterAdapter.this.notifyDataSetChanged();
+                    mAdapter.show(ListUtil.filter(mData, mClz, mConditions));
                 }
-                convertView = item;
-            }
-            ((ItemGroup) convertView).setChecked(mListView.isItemChecked(position));
-            //设置显示的内容
-            final Object o = mData.get(position);//要操作的对象
-            for (int i = 0; i < mColumns.size(); i++) {
-                try {
-                    final TextView text = (TextView) ((ViewGroup) convertView).getChildAt(i);
-                    //设置内容
-                    final Column column = mColumns.get(i);//column对象
-                    switch (column.getFieldType()) {
-                        case DOUBLE:
-                            text.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                            break;
-                        case FLOAT:
-                            text.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                            break;
-                        case INT:
-                            text.setInputType(InputType.TYPE_CLASS_NUMBER);
-                            break;
-                    }
-                    String content = column.getValue(o).toString();//该单元格的值
-                    text.setText(content);
-                    if (text instanceof EditText) {
-                        text.setOnFocusChangeListener(new OnFocusChangeListener() {
-                            @Override
-                            public void onFocusChange(View v, boolean hasFocus) {
-                                if (hasFocus) {
-                                    ((EditText) text).setSelection(0, text.getText().length());//获取焦点的时候默认选中所有的内容
-                                    //text.setText("");
-                                    mCurrentTouchedIndex = position;
-                                    //mInputManager.showSoftInput(v, InputMethodManager.SHOW_FORCED);//获取焦点的时候强制显示软键盘
-                                } else {
-                                    column.setValue(o, text.getText().toString());
-                                    mCurrentTouchedIndex = position;
-                                    //mInputManager.hideSoftInputFromWindow(v.getWindowToken(), 0); //失去焦点的时候强制隐藏键盘
-                                }
-                            }
-                        });
-                        if (mCurrentTouchedIndex == position) {
-                            text.requestFocus();
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            return convertView;
+            });
+            return text;
         }
 
-
+        @Override
+        public void notifyDataSetChanged() {
+            key.clear();
+            key.addAll(mConditions.keySet());
+            if (mConditions.size() > 0) {
+                mFilterView.setVisibility(View.VISIBLE);
+            } else {
+                mFilterView.setVisibility(View.GONE);
+            }
+            super.notifyDataSetChanged();
+        }
     }
 
-    /**
-     * 滑动监听，{@link #mListView}在滑动的时候把焦点清楚，解决
-     * parameter must be a descendant of this view
-     */
-    protected class MyScrollListener implements AbsListView.OnScrollListener {
+    class MyCallBack extends ItemTouchHelper.Callback {
 
         @Override
-        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            // do nothing
-        }
-
-        @Override
-        public void onScrollStateChanged(AbsListView view, int scrollState) {
-            if (SCROLL_STATE_TOUCH_SCROLL == scrollState) {
-/*                View currentFocus = mActivity.getCurrentFocus();
-                if (currentFocus != null) {
-                    currentFocus.clearFocus();
-                }*/
-                view.clearFocus();
-                mInputManager.hideSoftInputFromWindow(view.getWindowToken(), 0);//滚动的时候隐藏软键盘
+        public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            if (recyclerView.getLayoutManager() instanceof GridLayoutManager) {
+                final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
+                final int swipeFlags = 0;
+                return makeMovementFlags(dragFlags, swipeFlags);
+            } else {
+                final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+                final int swipeFlags = 0;
+                return makeMovementFlags(dragFlags, swipeFlags);
             }
         }
 
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            //得到当拖拽的viewHolder的Position
+            int fromPosition = viewHolder.getAdapterPosition();
+            //拿到当前拖拽到的item的viewHolder
+            int toPosition = target.getAdapterPosition();
+            if (fromPosition < toPosition) {
+                for (int i = fromPosition; i < toPosition; i++) {
+                    Collections.swap(mData, i, i + 1);
+                }
+            } else {
+                for (int i = fromPosition; i > toPosition; i--) {
+                    Collections.swap(mData, i, i - 1);
+                }
+            }
+            //mAdapter.swipColor((ViewGroup) mTable.getChildAt(fromPosition), (ViewGroup) mTable.getChildAt(toPosition));
+            mAdapter.notifyItemMoved(fromPosition, toPosition);
+            return true;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            System.out.println("onswiped");
+        }
+
+        /**
+         * 长按item的时候高亮
+         *
+         * @param viewHolder
+         * @param actionState
+         */
+        @Override
+        public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+            if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
+                viewHolder.itemView.setBackgroundColor(Color.LTGRAY);
+            }
+            super.onSelectedChanged(viewHolder, actionState);
+        }
+
+        /**
+         * 手指松开的时候还原
+         *
+         * @param recyclerView
+         * @param viewHolder
+         */
+        @Override
+        public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+            viewHolder.itemView.setBackgroundColor(0);
+        }
     }
 }
