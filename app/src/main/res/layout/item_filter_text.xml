@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_gravity="center"
+    android:background="@drawable/edit_bg"
+    android:drawableRight="@drawable/delete"
+    android:gravity="center"
+    android:layout_margin="2dp"
+    tools:text="1236456"
+    android:textColor="@android:color/black"
+    android:textSize="@dimen/text_four" />
+
