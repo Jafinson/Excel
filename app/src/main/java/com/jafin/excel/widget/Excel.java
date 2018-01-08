@@ -19,13 +19,11 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -187,6 +185,7 @@ public class Excel<T> extends LinearLayout {
      */
     public void refreshColumns(List<Column> columns) {
         mColumns = Column.getShowColumns(columns);
+        initHeader(mColumns);
         if (mData != null) {
             mTable.setAdapter(new MyAdapter(mData));
         }
@@ -340,6 +339,15 @@ public class Excel<T> extends LinearLayout {
         return dialog;
     }
 
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        View currentFocus = mCtx.getCurrentFocus();
+        if (currentFocus != null) {
+            currentFocus.clearFocus();
+            mTable.scrollToPosition(mAdapter.mCurrentTouchedIndex);
+        }
+    }
 
     /**
      * 根据column的信息判断应该用textview edittext checkbox
@@ -348,11 +356,11 @@ public class Excel<T> extends LinearLayout {
      * @return 0-textview 1-edittext 2-checkbox 3-ratio
      */
     private int getItemType(Column column) {
-        if (column.editable) {
+        /*if (column.editable) {
             return 1;
         }
         if (column.choiceMode == CHOICE_MODE_SINGLE) {
-            return 3;
+            //return 3;
         }
         String name;
         try {
@@ -365,7 +373,8 @@ public class Excel<T> extends LinearLayout {
         } catch (IllegalAccessException | NoSuchFieldException e) {
             e.printStackTrace();
         }
-        return 0;
+        return 0;*/
+        return column.getItemType();
     }
 
     //region 样式设置
@@ -458,14 +467,11 @@ public class Excel<T> extends LinearLayout {
             text.setText(column.getName());
             text.setBackgroundColor(headerColor);
             text.setCompoundDrawablesWithIntrinsicBounds(null, null, mCtx.getResources().getDrawable(R.drawable.arrow_drop_down), null);
-            text.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mData == null) {
-                        return;
-                    }
-                    showFilterDialog(column);
+            text.setOnClickListener(v -> {
+                if (mData == null) {
+                    return;
                 }
+                showFilterDialog(column);
             });
             mHeaderView.addView(text);
         }
@@ -506,6 +512,7 @@ public class Excel<T> extends LinearLayout {
         private int mCurrentTouchedIndex = -1;//记录editTetxt焦点所在的position，得到焦点的时候值为position ，失去焦点的时候置为-1
         private RadioButton rb_checked;
         private List<T> data;
+        //private EditText focus;
 
         private MyAdapter(List<T> data) {
             this.data = new ArrayList<>();
@@ -540,14 +547,16 @@ public class Excel<T> extends LinearLayout {
             }
             RecyclerView.ViewHolder holder = new RecyclerView.ViewHolder(root) {
             };
-            holder.itemView.setOnLongClickListener(v -> {
-                helper.startDrag(holder);
-                //获取系统震动服务
-                Vibrator vib = (Vibrator) mCtx.getSystemService(Service.VIBRATOR_SERVICE);
-                //震动70毫秒
-                vib.vibrate(70);
-                return true;
-            });
+            if (draggable) {
+                holder.itemView.setOnLongClickListener(v -> {
+                    helper.startDrag(holder);
+                    //获取系统震动服务
+                    Vibrator vib = (Vibrator) mCtx.getSystemService(Service.VIBRATOR_SERVICE);
+                    //震动70毫秒
+                    vib.vibrate(70);
+                    return true;
+                });
+            }
             return holder;
         }
 
@@ -558,26 +567,18 @@ public class Excel<T> extends LinearLayout {
             final View vCheck = ((ViewGroup) holder.itemView).getChildAt(0);
             if (mChoiceMode == CHOICE_MODE_MULTIPLE && vCheck instanceof CheckBox) {//多选
                 //根据操作设置值
-                ((CheckBox) vCheck).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        checked[copyPosition] = isChecked;
-                    }
-                });
+                ((CheckBox) vCheck).setOnCheckedChangeListener((buttonView, isChecked) -> checked[copyPosition] = isChecked);
                 ((CheckBox) vCheck).setChecked(checked[copyPosition]);//根据值设置view
             } else if (mChoiceMode == CHOICE_MODE_SINGLE && vCheck instanceof RadioButton) {//单选
-                ((RadioButton) vCheck).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if (isChecked && checkPosition != copyPosition) {
-                            if (rb_checked == null) {
-                                ((RadioButton) ((ViewGroup) mTable.getChildAt(0)).getChildAt(0)).setChecked(false);
-                            } else {
-                                rb_checked.setChecked(false);
-                            }
-                            checkPosition = copyPosition;
-                            rb_checked = ((RadioButton) vCheck);
+                ((RadioButton) vCheck).setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    if (isChecked && checkPosition != copyPosition) {
+                        if (rb_checked == null) {
+                            ((RadioButton) ((ViewGroup) mTable.getChildAt(0)).getChildAt(0)).setChecked(false);
+                        } else {
+                            rb_checked.setChecked(false);
                         }
+                        checkPosition = copyPosition;
+                        rb_checked = ((RadioButton) vCheck);
                     }
                 });
                 if (copyPosition == checkPosition) {
@@ -595,42 +596,30 @@ public class Excel<T> extends LinearLayout {
                         if (mCurrentTouchedIndex == copyPosition) {
                             text.requestFocus();
                         }
-                        text.setOnTouchListener(new OnTouchListener() {
-                            @Override
-                            public boolean onTouch(View v, MotionEvent event) {
-                                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                                    mCurrentTouchedIndex = copyPosition;
-                                }
-                                return false;
-                            }
-                        });
-                        text.setOnFocusChangeListener(new OnFocusChangeListener() {
-                            @Override
-                            public void onFocusChange(View v, boolean hasFocus) {
-                                if (!hasFocus) {
-                                    try {
-                                        column.setValue(o, ((TextView) v).getText().toString());
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        });
                         try {
                             text.setText(column.getValue(o).toString());
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         }
-                        break;
-                    case 2:
-                        ((CheckBox) text).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        text.setOnFocusChangeListener((v, hasFocus) -> {
+                            if (hasFocus) {
+                                mCurrentTouchedIndex = copyPosition;
+                            } else {
+                                mCurrentTouchedIndex = -1;
                                 try {
-                                    column.setValue(o, isChecked);
-                                } catch (IllegalAccessException e) {
+                                    column.setValue(o, text.getText().toString());
+                                }catch (Exception e){
                                     e.printStackTrace();
                                 }
+                            }
+                        });
+                        break;
+                    case 2:
+                        ((CheckBox) text).setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            try {
+                                column.setValue(o, isChecked);
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
                             }
                         });
                         try {
@@ -767,11 +756,11 @@ public class Excel<T> extends LinearLayout {
             int toPosition = target.getAdapterPosition();
             if (fromPosition < toPosition) {
                 for (int i = fromPosition; i < toPosition; i++) {
-                    Collections.swap(mData, i, i + 1);
+                    Collections.swap(mAdapter.data, i, i + 1);
                 }
             } else {
                 for (int i = fromPosition; i > toPosition; i--) {
-                    Collections.swap(mData, i, i - 1);
+                    Collections.swap(mAdapter.data, i, i - 1);
                 }
             }
             //mAdapter.swipColor((ViewGroup) mTable.getChildAt(fromPosition), (ViewGroup) mTable.getChildAt(toPosition));
@@ -781,7 +770,7 @@ public class Excel<T> extends LinearLayout {
 
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            System.out.println("onswiped");
+
         }
 
         /**

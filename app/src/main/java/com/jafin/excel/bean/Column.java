@@ -2,6 +2,8 @@ package com.jafin.excel.bean;
 
 import android.support.annotation.NonNull;
 
+import com.jafin.excel.annotation.AColumn;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -10,39 +12,47 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Column implements Comparable, Serializable {
+public class Column implements Comparable, Serializable,Cloneable {
     //region json字段
     /***
      * 该列所占的宽度比例
      */
+    @AColumn(name = "宽度")
     private float width;
     /**
      * 该列对应的对象属性
      */
+    @AColumn(name = "字段")
     private String field;
     /**
      * 该列是否显示
      */
+    @AColumn(name = "可视")
     private boolean isShow;
     /**
      * 显示顺序；
      */
+    @AColumn(name = "顺序",width = 0.5f)
     private int order;
     /**
      * 是否冻结
      */
+    @AColumn(name = "冻结",width = 0.5f)
     private boolean frozen;
     /**
      * 显示格式
      */
+    @AColumn(name = "格式",width = 0.5f)
     private int format;
     /**
      * 对齐方式
      */
+    @AColumn(name = "对齐方式",width = 0.5f)
     private int alignment;
     /**
      * 该列的中文名，表头
      */
+    @AColumn(name = "名称",width = 0.5f)
     private String name;
 
     public void setIsShow(boolean isShow) {
@@ -328,4 +338,30 @@ public class Column implements Comparable, Serializable {
 
     }
 
+    /**
+     * 根据column的信息判断应该用textview edittext checkbox
+     *
+     * @return 0-textview 1-edittext 2-checkbox 3-ratio
+     */
+    public int getItemType() {
+        if (editable) {
+            return 1;
+        }
+        String name;
+        try {
+            f.setAccessible(true);
+            name = f.getType().getName();
+            if ("boolean".equals(name)) {
+                return 2;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 }

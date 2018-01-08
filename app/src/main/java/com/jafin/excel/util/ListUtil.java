@@ -1,6 +1,8 @@
 package com.jafin.excel.util;
 
 
+import com.jafin.excel.bean.Column;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -20,7 +22,7 @@ import java.util.TreeSet;
  */
 public class ListUtil {
     /**
-     * 深度复制,性能太差
+     * 深度复制,性能太差,且系统的类如果无实现Serializable接口不能复制且报错
      *
      * @param bean 要复制的list
      * @return 复制后得list
@@ -40,6 +42,19 @@ public class ListUtil {
         return list;
     }
 
+    public static List columnClone(List<Column> columns) {
+        List list = new ArrayList();
+        for (Column column : columns) {
+            try {
+                Column clone = (Column) column.clone();
+                list.add(clone);
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+
     /**
      * 筛选列表
      *
@@ -53,7 +68,7 @@ public class ListUtil {
         }
         boolean[] checked = new boolean[source.size()];
         for (int i = 0; i < checked.length; i++) {
-            checked[i]=true;
+            checked[i] = true;
         }
         for (int i = 0; i < source.size(); i++) {
             T t = source.get(i);
@@ -63,15 +78,15 @@ public class ListUtil {
                     Field declaredField = clz.getDeclaredField(field);
                     declaredField.setAccessible(true);
                     Object o = declaredField.get(t);
-                    if(!entry.getValue().contains(o)){
-                        checked[i]=false;
+                    if (!entry.getValue().contains(o)) {
+                        checked[i] = false;
                         break;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            
+
         }
         return getAfterFilter(source, checked);
     }

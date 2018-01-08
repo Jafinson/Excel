@@ -50,7 +50,7 @@ public class ColumnFactory {
         return rslt;
     }
 
-    public static boolean checkType(Field field, String... arg) {
+    private static boolean checkType(Field field, String... arg) {
         boolean rslt = false;
         for (String anArg : arg) {
             if (anArg.equals(field.getType().getName())) {

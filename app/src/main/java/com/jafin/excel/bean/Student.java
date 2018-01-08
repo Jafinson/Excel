@@ -2,16 +2,13 @@ package com.jafin.excel.bean;
 
 import com.jafin.excel.annotation.AColumn;
 
-/**
- * Created by 何锦发 on 2018/1/5.
- */
 
 public class Student {
-    @AColumn(name = "年龄")
+    @AColumn(name = "年龄",width = 1.5f)
     private int age;
     @AColumn(name = "姓名")
     private String name;
-    @AColumn(name = "地址")
+    @AColumn(name = "地址",width = 1.3f)
     private String address;
     @AColumn(name = "分数")
     private double score;
