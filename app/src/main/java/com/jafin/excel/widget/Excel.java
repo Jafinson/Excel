@@ -19,6 +19,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -61,6 +62,7 @@ public class Excel<T> extends LinearLayout {
      * 是否支持拖拽
      */
     private boolean draggable;
+    private LinearLayoutManager mLinearLayoutManager;
 
     public void setDraggable(boolean draggable) {
         this.draggable = draggable;
@@ -129,6 +131,7 @@ public class Excel<T> extends LinearLayout {
     private Class<T> mClz;
     private ItemTouchHelper helper;
     private Map<String, Integer> fieldCheck;
+    private boolean move;
 
     public Excel(Context context) {
         this(context, null);
@@ -143,7 +146,8 @@ public class Excel<T> extends LinearLayout {
         mCtx = scanForActivity(context);
         View root = LayoutInflater.from(context).inflate(R.layout.excel, this, true);
         mTable = (RecyclerView) root.findViewById(R.id.body);
-        mTable.setLayoutManager(new LinearLayoutManager(context));
+        mLinearLayoutManager = new LinearLayoutManager(context);
+        mTable.setLayoutManager(mLinearLayoutManager);
 
         mFilterView = (HorizontalListView) root.findViewById(R.id.filter);
         mHeaderView = (LinearLayout) root.findViewById(R.id.header);
@@ -187,7 +191,8 @@ public class Excel<T> extends LinearLayout {
         mColumns = Column.getShowColumns(columns);
         initHeader(mColumns);
         if (mData != null) {
-            mTable.setAdapter(new MyAdapter(mData));
+            mAdapter = new MyAdapter(mAdapter.data);
+            mTable.setAdapter(mAdapter);
         }
     }
 
@@ -301,25 +306,22 @@ public class Excel<T> extends LinearLayout {
             Field field = (Field) f.get(column);
             final List filters = ListUtil.getNoRepeatValue(mAdapter.data, field);
             dialog = getDialog(filters, column.getName());
-            dialog.setListener(new SearchableDialog.OnPositiveListener() {
-                @Override
-                public void callback(Set data) {
-                    if (data.size() != 0) {
-                        if (mConditions == null) {
-                            mConditions = new HashMap<>();
-                        }
-                        mConditions.put(column.getField(), data);
-                        if (mFilterAdapter == null) {
-                            mFilterAdapter = new FilterAdapter();
-                            if (mConditions.size() > 0) {
-                                mFilterView.setVisibility(View.VISIBLE);
-                            }
-                            mFilterView.setAdapter(mFilterAdapter);
-                        } else {
-                            mFilterAdapter.notifyDataSetChanged();
-                        }
-                        mAdapter.show(ListUtil.filter(mAdapter.data, mClz, mConditions));
+            dialog.setListener(data -> {
+                if (data.size() != 0) {
+                    if (mConditions == null) {
+                        mConditions = new HashMap<>();
                     }
+                    mConditions.put(column.getField(), data);
+                    if (mFilterAdapter == null) {
+                        mFilterAdapter = new FilterAdapter();
+                        if (mConditions.size() > 0) {
+                            mFilterView.setVisibility(View.VISIBLE);
+                        }
+                        mFilterView.setAdapter(mFilterAdapter);
+                    } else {
+                        mFilterAdapter.notifyDataSetChanged();
+                    }
+                    mAdapter.show(ListUtil.filter(mAdapter.data, mClz, mConditions));
                 }
             });
             dialog.show(scanForActivity(mCtx).getFragmentManager(), "filter");
@@ -327,6 +329,14 @@ public class Excel<T> extends LinearLayout {
             e.printStackTrace();
         }
 
+    }
+
+    private void moveToPosition(int n) {
+        //先从RecyclerView的LayoutManager中获取第一项和最后一项的Position
+        int firstItem = mLinearLayoutManager.findFirstVisibleItemPosition();
+        //当要置顶的项已经在屏幕上显示时
+        int top = mTable.getChildAt(n - firstItem).getTop();
+        mTable.scrollBy(0, top);
     }
 
     private SearchableDialog dialog;
@@ -345,7 +355,9 @@ public class Excel<T> extends LinearLayout {
         View currentFocus = mCtx.getCurrentFocus();
         if (currentFocus != null) {
             currentFocus.clearFocus();
-            mTable.scrollToPosition(mAdapter.mCurrentTouchedIndex);
+            // mTable.scrollToPosition(mAdapter.mCurrentTouchedIndex);
+            mTable.smoothScrollBy(0, mAdapter.scrollY);
+            //moveToPosition(mAdapter.mCurrentTouchedIndex);
         }
     }
 
@@ -512,6 +524,7 @@ public class Excel<T> extends LinearLayout {
         private int mCurrentTouchedIndex = -1;//记录editTetxt焦点所在的position，得到焦点的时候值为position ，失去焦点的时候置为-1
         private RadioButton rb_checked;
         private List<T> data;
+        private int scrollY;
         //private EditText focus;
 
         private MyAdapter(List<T> data) {
@@ -602,16 +615,24 @@ public class Excel<T> extends LinearLayout {
                             e.printStackTrace();
                         }
                         text.setOnFocusChangeListener((v, hasFocus) -> {
-                            if (hasFocus) {
-                                mCurrentTouchedIndex = copyPosition;
-                            } else {
-                                mCurrentTouchedIndex = -1;
+                            if (!hasFocus) {
                                 try {
                                     column.setValue(o, text.getText().toString());
-                                }catch (Exception e){
-                                    e.printStackTrace();
+                                } catch (Exception e) {
+                                    try {
+                                        text.setText(column.getValue(o).toString());
+                                    } catch (Exception e1) {
+                                        e1.printStackTrace();
+                                    }
                                 }
                             }
+                        });
+                        text.setOnTouchListener((v, event) -> {
+                            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                                mCurrentTouchedIndex = copyPosition;
+                                scrollY = holder.itemView.getTop();
+                            }
+                            return false;
                         });
                         break;
                     case 2:
@@ -757,10 +778,16 @@ public class Excel<T> extends LinearLayout {
             if (fromPosition < toPosition) {
                 for (int i = fromPosition; i < toPosition; i++) {
                     Collections.swap(mAdapter.data, i, i + 1);
+                    int i1 = mData.indexOf(mAdapter.data.get(i));
+                    int i2 = mData.indexOf(mAdapter.data.get(i + 1));
+                    Collections.swap(mData, i1, i2);
                 }
             } else {
                 for (int i = fromPosition; i > toPosition; i--) {
                     Collections.swap(mAdapter.data, i, i - 1);
+                    int i1 = mData.indexOf(mAdapter.data.get(i));
+                    int i2 = mData.indexOf(mAdapter.data.get(i - 1));
+                    Collections.swap(mData, i1, i2);
                 }
             }
             //mAdapter.swipColor((ViewGroup) mTable.getChildAt(fromPosition), (ViewGroup) mTable.getChildAt(toPosition));

@@ -25,6 +25,8 @@ public class SettingDialog extends DialogFragment implements View.OnClickListene
     private List<Column> mSource;//外面传的源数据
     private Excel excel;
     private List<Column> myColumns;//本dialog显示的布局，自己构建
+    private Excel<Column> mExcel;
+
     {
         myColumns= Arrays.asList(
                 new Column("名称","name"),
@@ -53,7 +55,7 @@ public class SettingDialog extends DialogFragment implements View.OnClickListene
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.dialog_column, null);
-        Excel<Column> mExcel = (Excel<Column>) view.findViewById(R.id.excel);
+        mExcel = (Excel<Column>) view.findViewById(R.id.excel);
         View bt_confirm = view.findViewById(R.id.bt_confirm);
         bt_confirm.setOnClickListener(this);
         try {

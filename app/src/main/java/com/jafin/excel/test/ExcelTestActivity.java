@@ -38,10 +38,11 @@ public class ExcelTestActivity extends AppCompatActivity implements View.OnClick
         View bt_count = findViewById(R.id.bt_count);
         bt_count.setOnClickListener(this);
         try {
+            mColumns = new ArrayList<>();
             String[] fields = {"address", "school", "address", "name", "age", "score"};
-            mColumns = ColumnFactory.createByFields(Student.class, fields);
+         //   mColumns.addAll(ColumnFactory.createByFields(Student.class, fields));
             mColumns.addAll(ColumnFactory.createByClz(Student.class));
-            mColumns.get(5).editable = true;
+           // mColumns.get(5).editable = true;
             excel.initColumns(mColumns, Student.class, 2);
             mData = getData();
             excel.show(mData);
@@ -72,7 +73,7 @@ public class ExcelTestActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.bt_setting:
-                SettingDialog dialog = new SettingDialog(mColumns,excel);
+                SettingDialog dialog = new SettingDialog(mColumns, excel);
                 dialog.show(getSupportFragmentManager(), "ColumnSetting");
                 break;
             case R.id.bt_all:
